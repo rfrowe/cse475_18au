@@ -105,7 +105,7 @@ A creature can enter into the \textsc{spook} state from one of two ways: a risin
 Each creature has an internal spook threshold that lowered proportional to the time since the last spook.
 When a spook occurs, a strength is randomly generated which decides how `large' the spook is.
 This value is used to determine if the creature is actually spookd by comparing it to the current spook threshold. If it does, it enters into a spook state, and then passes on this spook.
-This value could be used to determine how great a response is--perhaps by volume or length.\\
+This value could be used to determine how great a response is--perhaps by volume or length.\\ss
 
 \textsc{spook} is called when the PIR sensor is activated. \textsc{spook} must also maintain internal state in order to prevent double spooks by the same PIR detection.
 \begin{algorithm}
