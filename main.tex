@@ -1,0 +1,189 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{datetime2}
+\usepackage{bytefield}
+\usepackage{algorithm,algpseudocode}
+\usepackage{amsmath,amsfonts}
+\usepackage{makecell}
+\setlength{\parindent}{0pt}
+
+\title{CSE 475 Creature Spec}
+\author{Ryan Rowe, Austin Beaulieu}
+\date{Rev. \today~\DTMcurrenttime}
+
+\newcommand{\ind}[1]{\ensuremath{[\![#1]\!]}}
+\newcommand{\code}{\texttt}
+\newcommand{\hex}[1]{\texttt{0x#1}}
+\newcommand{\bin}[1]{\texttt{0b#1}}
+\newcommand{\uint}[1]{\code{uint#1\_t}}
+\newcommand{\sint}[1]{\code{int#1\_t}}
+\newcommand{\float}{\code{float}}
+\newcommand{\assign}{\leftarrow}
+\newcommand{\rand}{\text{rand}}
+
+\renewcommand{\thesubsubsection}{PID \hex{\ifnum\value{subsubsection}<10 0\fi\arabic{subsubsection}}}
+
+\begin{document}
+
+\maketitle
+
+\section{The Creature Algorithm}
+
+\subsection{Initialization}
+Wait for Controller\\
+Get globals packet\\
+Set globals \\
+Random initialization of spook \& state (from list of possible states)
+
+
+\subsection{Loop}
+Play Current State\\
+Listen For Others\\
+Transition to New State\\
+Broadcast State
+
+\subsection{Bookkeeping}
+Creature distances\\
+Creature states
+
+
+
+\clearpage
+\section{Packet Protocol}
+
+Packets are sent and received in the following format. The first byte is the packet identifier, followed by the originating address (either $2^{\mbox{kit}}$ or $2^{\mbox{kit}} - 1$) and destination address. To send a packet to all creatures, use the broadcast address \hex{FF}.\\
+
+\begin{bytefield}[bitwidth=\textwidth/48]{48}
+\bitheader{0-24}\\
+\bitbox{8}{\uint{8} \code{packetID}}
+\bitbox{8}{\uint{8} \code{srcAddr}}
+\bitbox{8}{\uint{8} \code{destAddr}}
+\bitbox{24}{\uint{8} \code{payload[sizeof(packet) - 3]}}
+\end{bytefield}
+
+\subsection{Packet Types}
+
+All payload contents are listed by their byte offset inside the payload array.
+
+\subsubsection{Set Globals}
+Updates a series of creature variables. Only valid \code{if sourceAddr == 0}.\\
+
+\begin{tabular}{r|l|l|l}
+\textbf{Byte} & \textbf{Variable} & \textbf{Default} & \textbf{Description}\\\hline
+0 & \uint{16} \code{TX\_POWER} & 1 & Radio transmit power\\
+2 & \uint{8} \code{SPOOK\_RAND\_MIN} & 100 & Minimum bound when generating spook strength\\
+3 & \uint{8} \code{SPOOK\_RAND\_MAX} & 200 & Maximum bound when generating spook strength\\
+4 & \uint{8} \code{SPOOK\_MAX} & 255 & Maximum spook strength\\
+5 & \uint{8} \code{SPOOK\_THRESHOLD} & 150 & Trigger threshold for being spookd\\
+\end{tabular}
+
+\subsubsection{Stop}
+
+Enter \textsc{wait} state. Only valid \code{if sourceAddr == 0}.
+
+\subsubsection{Start}
+
+Enter \textsc{wait} state. Only valid \code{if sourceAddr == 0}.
+
+\begin{tabular}{r|l|l|l}
+\textbf{Byte} & \textbf{Variable} & \textbf{Description}\\\hline
+0 & \uint{8} \code{mode} & \
+\end{tabular}
+
+\subsubsection{Spook}
+\subsubsection{Entered State}
+\subsubsection{Report Local Topology}
+\subsubsection{Broadcast Topology}
+
+\clearpage
+\section{Global Values}
+
+\clearpage
+\section{Spooks}
+A creature can enter into the \textsc{spook} state from one of two ways: a rising edge from the PIR sensor (0 to 1) or from a spook passed on from another creature. 
+Each creature has an internal spook threshold that lowered proportional to the time since the last spook.
+When a spook occurs, a strength is randomly generated which decides how `large' the spook is.
+This value is used to determine if the creature is actually spookd by comparing it to the current spook threshold. If it does, it enters into a spook state, and then passes on this spook.
+This value could be used to determine how great a response is--perhaps by volume or length.\\
+
+\textsc{spook} is called when the PIR sensor is activated. \textsc{spook} must also maintain internal state in order to prevent double spooks by the same PIR detection.
+\begin{algorithm}
+    \begin{algorithmic}[1]
+        \Function{spook}{}\\
+            \qquad strength $\longleftarrow \min\left\{255, \rand(\code{SPOOK\_MIN},  \code{SPOOK\_MAX}) * \left(1 - \frac{255}{\code{SPOOK\_TREHSOLD}} \cdot 0.5 + 1\right)\right\}$\\
+            \qquad rxSpookd(strength, rand(0, 255))
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+\textsc{rxSpookd} is called afterwards, and when one is passed on from another creature
+\begin{algorithm}
+    \begin{algorithmic}[1]
+        \State $\code{lastSpookID} \assign{}$nonlocal value holding the last recieved spook ID
+        \Function{rxSpookd}{\code{spookStrength, spookID}}
+            \If{$\code{spookID} \neq \code{lastSpookID} \And \code{spookStrength} \geq \texttt{SPOOK\_TRESHOLD}$}
+                \State playSpookSound() // Do not broadcast packet notifying sound played
+                \State $\code{SPOOK\_THRESHOLD} = \rand(\code{SPOOK\_THRESHOLD}, 255)$
+                \State sendSpookPacket$(\code{spookStrength} * \code{SPOOK\_DECAY}, \code{spookID})$
+                \State lastSpookID = spookID
+            \Else
+                \State $\code{SPOOK\_THRESHOLD} = \max(0, \code{SPOOK\_THRESHOLD} - \code{SPOOK\_INCREMENT})$
+            \EndIf
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+Threshold modifier\\
+Threshold = threshold modifier * global threshold\\
+
+spook increment
+
+\clearpage
+\section{States}
+Normal States\\
+Pause \& Listen State\\
+Spook State
+
+
+
+
+\clearpage
+\section{State Transitions}
+All creatures will have a predetermined number of states that they can enter into, with reasonably similar intention for the state itself. This does not mean that they will be similar in how they are implemented, but rather that certain states, like a spook state, convey a similar tone as that of other creatures.\\
+
+Let $\mathbb{S}$ be the set of all states a creature can enter into\\
+Let $d$ be the number of possible creature states\\
+Let $N$ be the number of all creatures\\
+
+Each creature will be able to enter into one of $\mathbb{S}$. To compute this, we will a few things:
+\begin{enumerate}
+    \item $\mathbb{C}$ : The set representing the record of the current state of all other $N$ creatures. 
+    \item $\mathbb{W}_i \in \mathbb{R}^d$: The set of relative weights for transitions into its next state based on this creature's current state (higher weights being more likely). 
+    \item $\mathbb{L}_i \in \mathbb{R}^d$: The set of scalars used for determining the weight that other creatures of the same state have on this creature's likelihood of transitioning into that state.  If a scalar $\mathbb{L}_n > 0$, then it directly scales with respect to the number of creatures in state $\mathbb{C}_n$, else if $\mathbb{L}_n < 0$, it is inversely proportional 
+    \item $\mathbb{O}_i \in \mathbb{R}^N$ : The distance from this creature to the $N$ other creatures
+    \item $\mathbb{D}_i \in \mathbb{R}^N$ : The inverse distances of the $N$ creatures to this creature derived from $\mathbb{O}$. If $\mathbb{O}_i \neq 0$ then $\mathbb{D}_i = 1 / \mathbb{O}_i$, else $\mathbb{D}_i = 0$
+\end{enumerate}
+
+The final weight for a transition from state $\mathbb{S}_i$ to state $\mathbb{S}_j$ is calculated as follows:\\
+
+$\widetilde{\mathbb{L}}_{i,j} = \mathbb{L}_{i,j} \cdot \frac{N - \sum^{N}_{k = 0} \ind{\mathbb{C}_k = \mathbb{S}_j}}{N}$\\\\
+
+$\mathbb{P} = {\left\{\mathbb{W}_{i,j} + \widetilde{\mathbb{L}}_{i,j} \cdot \sum^{N}_{k = 0} \mathbb{D}_{i,j} \ind{\mathbb{C}_k = \mathbb{S}_j}\right\}}_{j = 1}^N$ for each creature $\mathbb{C}_i$\\\\
+
+$\widetilde{\mathbb{P}} = {\left\{ \sum_{i=1}^j \mathbb{P}_i \right\}}^N_{j=1}$\\\\
+
+Let $R = \texttt{Random}(0, \widetilde{\mathbb{P}}_N)$
+
+\begin{algorithm}
+    \begin{algorithmic}[1]
+        \For{$i \in \left\{1,...,N\right\}$}
+            \If{$R < \widetilde{\mathbb{P}}_i$}
+                \State Let $\mathbb{S}_i$ be the next state to transition to
+            \EndIf
+        \EndFor
+    \end{algorithmic}
+\end{algorithm}
+
+
+\end{document}
