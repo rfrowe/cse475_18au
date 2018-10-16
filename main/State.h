@@ -18,6 +18,8 @@ class State {
   void rx_start();
   void rx_spook(uint8_t strength, spookID);
   void rx_entered_state();
+  void rx_play_sound();
+  void rx_play_effect();
   void rx_report_local_topology();
   void rx_broadcast_topology();
 
