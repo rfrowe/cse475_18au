@@ -19,10 +19,8 @@
 \newcommand{\uint}[1]{\code{uint#1\_t}}
 \newcommand{\sint}[1]{\code{int#1\_t}}
 \newcommand{\float}{\code{float}}
-\newcommand{\assign}{\leftarrow}
+\newcommand{\assign}{\ensuremath{\leftarrow}}
 \newcommand{\rand}{\text{rand}}
-
-\renewcommand{\thesubsubsection}{PID \hex{\ifnum\value{subsubsection}<10 0\fi\arabic{subsubsection}}}
 
 \begin{document}
 
@@ -31,21 +29,34 @@
 \section{The Creature Algorithm}
 
 \subsection{Initialization}
-Wait for Controller\\
-Get globals packet\\
-Set globals \\
-Random initialization of spook \& state (from list of possible states)
+When each creature turns on, it must go through initialization:
 
+\begin{enumerate}
+    \item Wait for communication with Controller
+    \item Receive \& set data from AdjustGlobals packet
+    \item Initialize current state randomly from the list of standard states
+\end{enumerate}
 
 \subsection{Loop}
-Play Current State\\
-Listen For Others\\
-Transition to New State\\
-Broadcast State
+For every \code{RepeatCycle} amount of time, run the following process:
+\begin{enumerate}
+    \item If the controller sends PlaySoundN or PlayEffectN, play that sound and/or effect, else play current state
+    \item Start the radio and set listen timer for $\rand(\code{minListen}, \code{maxListen})$ milliseconds for other creatures and/or the controller
+    \item Calculate the transition to the next state
+    \item Set a timer for \code{minListen} for sending the new state to other creatures when timer fired
+\end{enumerate}
+
 
 \subsection{Bookkeeping}
-Creature distances\\
-Creature states
+Each creature needs to maintain values pertaining to the global state of the creature network and to the internal state of the creature itself. This section outlines these values.
+
+\subsubsection{Global Values}
+Creatures will receive state transition packets from other creatures. Each should maintain a list of the states other creatures are in and update this as it changes. We refer to this as the \code{StateList}. The creature should also maintain a running average of RSSI from these packets. This average should serve as a reasonably accurate heuristic for the distances from other creatures. We refer to this as \code{DistanceList}.
+\subsubsection{Local Values}
+Time since last spook
+SpookThreshold
+Current state
+Repeat state
 
 
 
@@ -66,7 +77,10 @@ Packets are sent and received in the following format. The first byte is the pac
 
 All payload contents are listed by their byte offset inside the payload array.
 
+\begingroup
+\renewcommand{\thesubsubsection}{PID \hex{\ifnum\value{subsubsection}<10 0\fi\arabic{subsubsection}}}
 \subsubsection{Set Globals}
+
 Updates a series of creature variables. Only valid \code{if sourceAddr == 0}.\\
 
 \begin{tabular}{r|l|l|l}
@@ -95,6 +109,7 @@ Enter \textsc{wait} state. Only valid \code{if sourceAddr == 0}.
 \subsubsection{Entered State}
 \subsubsection{Report Local Topology}
 \subsubsection{Broadcast Topology}
+\endgroup
 
 \clearpage
 \section{Global Values}
@@ -105,7 +120,7 @@ A creature can enter into the \textsc{spook} state from one of two ways: a risin
 Each creature has an internal spook threshold that lowered proportional to the time since the last spook.
 When a spook occurs, a strength is randomly generated which decides how `large' the spook is.
 This value is used to determine if the creature is actually spookd by comparing it to the current spook threshold. If it does, it enters into a spook state, and then passes on this spook.
-This value could be used to determine how great a response is--perhaps by volume or length.\\ss
+This value could be used to determine how great a response is--perhaps by volume or length.\\
 
 \textsc{spook} is called when the PIR sensor is activated. \textsc{spook} must also maintain internal state in order to prevent double spooks by the same PIR detection.
 \begin{algorithm}
@@ -120,30 +135,43 @@ This value could be used to determine how great a response is--perhaps by volume
 \textsc{rxSpookd} is called afterwards, and when one is passed on from another creature
 \begin{algorithm}
     \begin{algorithmic}[1]
-        \State $\code{lastSpookID} \assign{}$nonlocal value holding the last recieved spook ID
+        \State $\code{lastSpookID} \assign $nonlocal value holding the last recieved spook ID
         \Function{rxSpookd}{\code{spookStrength, spookID}}
             \If{$\code{spookID} \neq \code{lastSpookID} \And \code{spookStrength} \geq \texttt{SPOOK\_TRESHOLD}$}
                 \State playSpookSound() // Do not broadcast packet notifying sound played
                 \State $\code{SPOOK\_THRESHOLD} = \rand(\code{SPOOK\_THRESHOLD}, 255)$
                 \State sendSpookPacket$(\code{spookStrength} * \code{SPOOK\_DECAY}, \code{spookID})$
-                \State lastSpookID = spookID
+                \State \code{lastSpookID} \assign \code{spookID}
             \Else
-                \State $\code{SPOOK\_THRESHOLD} = \max(0, \code{SPOOK\_THRESHOLD} - \code{SPOOK\_INCREMENT})$
+                \State $\code{SPOOK\_THRESHOLD} = \max\{0, \code{SPOOK\_THRESHOLD} - \code{SPOOK\_INCREMENT}\}$
             \EndIf
         \EndFunction
     \end{algorithmic}
 \end{algorithm}
 
-Threshold modifier\\
-Threshold = threshold modifier * global threshold\\
+Each state class will define a spook threshold modifier. This is a positive floating point value that defines the state's threshold relative to the globally defined threshold that was broadcast by the controller:\\
+$\code{StateThreshold} = \code{StateThresholdModifier} \cdot \code{GlobalThreshold}$\\
 
-spook increment
+Each state class will also define a spook increment that determines how much the spook threshold changes per time cycle. This does not need to be called every cycle, since we will keep an internal record of the amound of time since the last spook:\\
+$\code{StateThreshold} -= \code{StateThresholdModifier} \cdot \code{TimeSinceSpook}$\\
+
+When a creature transitions from one state to another, it should copy over its current StateThreshold. Because of this, we must use the above equation to decrement the \code{StateThreshold} before passing it onto the next state, since in the new state \code{TimeSinceSpook} will be 0. 
+
+
 
 \clearpage
 \section{States}
-Normal States\\
-Pause \& Listen State\\
-Spook State
+
+\subsection{Normal States}
+
+Ambient 1 - 3\\
+Active 1 - 3\\
+Loud 1 - 3\\
+
+\subsection{Pause And Listen State}
+
+
+\subsection{Spook State}
 
 
 
