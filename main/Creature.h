@@ -22,6 +22,20 @@
 #define RFM69_CS 8
 #define RFM69_INT 3
 #define RFM69_RST 4
+#define CONTROLLER_ADDR 0x00
+#define BROADCAST_ADDR 0xFF
+
+typedef struct Globals {
+  uint16_t TX_POWER;
+  uint8_t STARTLE RAND_MIN;
+  uint8_t STARTLE RAND_MAX;
+  uint8_t STARTLE_MAX;
+  uint8_t STARTLE_THRESHOLD;
+  float STARTLE_THRESHOLD_DECAY;
+  uint8_t STARTLE_DECAY;
+  uint8_t NUM_CREATURES;
+  uint16_t CYCLE_TIME;
+};
 
 class Creature {
  public:
@@ -30,8 +44,8 @@ class Creature {
   Creature& operator=(Creature const&) = delete;
 
   void setup();
-  bool rx();
-  bool tx(uint8_t pid, uint8_t dst_addr, uint8_t* payload);
+  bool rx(uint8_t pid, uint8_t src_addr, uint8_t len, uint8_t* payload);
+  bool tx(uint8_t pid, uint8_t dst_addr, uint8_t len, uint8_t* payload);
 
   // Getters and Setters
   uint8_t get_addr() {
@@ -62,12 +76,13 @@ class Creature {
     return _creature_distances;
   }
 
-  RH_RF69 _rf69 = RH_RF69(RFM69_CS, RFM69_INT);
-  Adafruit_FeatherOLED _oled = Adafruit_FeatherOLED();
-  Adafruit_NeoPixel_ZeroDMA _strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
+  RH_RF69 rf69 = RH_RF69(RFM69_CS, RFM69_INT);
+  Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
+  Adafruit_NeoPixel_ZeroDMA strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
+  Globals GLOBALS;
  private:
   // State& _current;
-  uint8_t _kit_num, _addr, _last_startle_id;
+  uint8_t _kit_num, _addr, _last_startle_id, _num_repeats;
   uint32_t _last_startle, _last_loop;
   uint8_t* _creature_states; // Should be size NUM_CREATURES
   int8_t* _creature_distances; // Should be size NUM_CREATURES
