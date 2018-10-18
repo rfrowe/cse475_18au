@@ -58,12 +58,20 @@ class State {
   }
 
  private:
-  static uint8_t* _localWeights; // should be size ACTIVE_STATES + AMBIENT_STATES
-  static uint8_t* _globalWeights; // should be size ACTIVE_STATES + AMBIENT_STATES
-  static uint8_t  _startleDecay;
-  uint8_t _repeat_state;
+  static uint8_t const* _localWeights;    // should be size ACTIVE_STATES + AMBIENT_STATES
 
-  Creature& _creature;
+  static uint8_t const* _globalWeights;   // should be size ACTIVE_STATES + AMBIENT_STATES
+
+  static uint8_t  _startleDecay;          // How quickly this state's decay
+
+  static float _startle_factor;           // Relative speed & threshold of startle for this class.
+                                          // 1.0 = default. 2.0 -> 2x faster/more, 0.5 -> 2x slower/less
+
+  static const uint8_t _state_id;         // Please name this accordingly, 1 and increasing odd for ambient,
+                                          // 2 and increasing even for active. Dont repeat state numbers.
+
+  uint8_t _repeat_state;
+  const Creature& _creature;
 };
 
 #endif  // _STATE_H_
