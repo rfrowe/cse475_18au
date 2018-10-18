@@ -30,5 +30,5 @@ class Creature {
  private:
    State* _current;
    uint8_t _kit_num, _addr;
-   uint8_t _last_spook, _last_loop;
+   uint8_t _last_startle, _last_loop;
 }
