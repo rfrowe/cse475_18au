@@ -1,8 +1,12 @@
 #include <cinttypes>
 
+#define CREATURE_NUM 32;
+
 class State {
  public:
   // TODO: call set_globals with defaults in impl.
+
+
   State(uint8_t addr) : _addr(addr) {}
   State(const State&) = delete;
   State& operator=(State const&) = delete;
@@ -30,6 +34,11 @@ class State {
   // Called when a sound should be played
   void playSound(uint8_t sound_idx, bool);
  private:
+
+   static uint8_t*& _getLocalWeights();
+
+   static uint8_t*& _getGlobalWeights();
+
   // Transmit
   void _tx();
   // Receive
@@ -38,7 +47,7 @@ class State {
   // dt = Difference in time
   void _loop(uint32_t dt);
 
-  uint8_t _addr, _last_startle_id;
+  uint8_t _addr, _last_startle_id, _repeat_state, _startle_threshold;
 
   uint32_t _last_startle, _last_loop;
 

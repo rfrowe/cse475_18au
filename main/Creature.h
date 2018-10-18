@@ -1,5 +1,6 @@
 #include <cinttypes>
 
+#include <Adafruit_FeatherOLED.h>
 #include <Adafruit_NeoPixel_ZeroDMA.h>
 #include <RH_RF69.h>
 #include <Wire.h>
@@ -24,11 +25,13 @@ class Creature {
    Creature(const Creature&) = delete;
    Creature& operator=(Creature const&) = delete;
 
-   RH_RF69 rf69(RFM69_CS, RFM69_INT);
+   RH_RF69 rf69 = new RH_RF69(RFM69_CS, RFM69_INT);
    Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
    Adafruit_NeoPixel_ZeroDMA strip(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
  private:
    State* _current;
    uint8_t _kit_num, _addr;
    uint8_t _last_startle, _last_loop;
+   uint8_t* _creature_states;
+   uint32_t* _creature_distances;
 }
