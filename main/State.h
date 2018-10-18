@@ -1,22 +1,26 @@
+#ifndef _STATE_H_
+#define _STATE_H_
+
 #include <cinttypes>
 
-#define CREATURE_NUM 32;
+#include "Creature.h"
+
+class Creature;
 
 class State {
  public:
   // TODO: call set_globals with defaults in impl.
 
-  State(Creature& creature) : _creature(creature) {}
+  State(Creature& creature) : _creature(creature) {};
   State(const State&) = delete;
   State& operator=(State const&) = delete;
  protected:
-  void loop(uint32_t dt);
-  inline uint8_t addr() final { return this->_addr; }
-  void rx();
-  bool tx();
+//   void loop(uint32_t dt);
+//   void rx();
+//   bool tx();
 
   // Packet receivers
-  // void rx_set_globals(uint8_t* payload);
+  void rx_set_globals(uint8_t* payload);
   void rx_stop();
   void rx_start(uint8_t mode);
   void rx_play_sound(uint8_t sound_idx);
@@ -36,12 +40,14 @@ class State {
   // Called when a sound should be played
   void playSound(uint8_t sound_idx, bool broadcast);
   // Called when an effect should be displayed
-  void playEffect(unt8_t effect_idx, bool broadcast);
+  void playEffect(uint8_t effect_idx, bool broadcast);
  private:
-  static uint8_t*& _localWeights;
-  static uint8_t*& _globalWeights;
+//   static uint8_t* _localWeights;
+//   static uint8_t* _globalWeights;
   static uint8_t _startleDecay;
   uint8_t _repeat_state;
 
   Creature& _creature;
-}
+};
+
+#endif  // _STATE_H_

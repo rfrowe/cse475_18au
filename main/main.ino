@@ -1,13 +1,16 @@
-#include "State.h"
+#include "Creature.h"
 
 #define KIT_NUM 10
 
-Creature *c;
+Creature c(KIT_NUM);
 
 void setup() {
-  c = new Creature(KIT_NUM);
+  Serial.begin(115200);
+  delay(3000);
+
+  Serial.println("Creating creature");
+  c.setup();
 }
 
 void loop() {
-  c->loop();
 }
