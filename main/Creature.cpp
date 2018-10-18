@@ -10,6 +10,20 @@ Creature::Creature(uint8_t kit_num) {
   pinMode(ID_PIN, INPUT);
   _kit_num = kit_num;
   _addr = 2 * kit_num  - digitalRead(ID_PIN);
+
+  _last_startle = millis();
+  _last_loop = millis();
+
+  // Set WAIT as initial state
+  // _next = Wait();
+}
+
+void Creature::loop() {
+  uint32_t this_loop = millis();
+  _state->loop(this_loop - _last_loop);
+  _last_loop = this_loop;
+
+  // Poll radio for packets
 }
 
 void Creature::setup() {
@@ -20,7 +34,7 @@ void Creature::setup() {
 
   delay(100);
   pinMode(LED_PIN, OUTPUT);
-  
+
 
   _oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
   _oled.display();
@@ -44,7 +58,7 @@ void Creature::setup() {
   delay(10);
 
   if (!_rf69.init() || !_rf69.setFrequency(RFM69_FREQ)) {
-    Serial.println("RFM69 radio init failed");
+    Serial.println(F("RFM69 radio init failed"));
     while (1);
   }
   _rf69.setTxPower(14, true);
@@ -53,8 +67,7 @@ void Creature::setup() {
                    0xf7, 0xf2, 0x18, 0xc3, 0x5c, 0xce, 0x96, 0x65};
   _rf69.setEncryptionKey(key);
 
-  Serial.print("RFM69 radio @ ");
+  Serial.print(F("RFM69 radio @ "));
   Serial.print(RFM69_FREQ);
-  Serial.println("MHz");
+  Serial.println(F("MHz"));
 }
-

@@ -30,11 +30,10 @@ class Creature {
   Creature& operator=(Creature const&) = delete;
 
   void setup();
+  bool rx();
+  bool tx(uint8_t pid, uint8_t dst_addr, uint8_t* payload);
 
-  RH_RF69 _rf69 = RH_RF69(RFM69_CS, RFM69_INT);
-  Adafruit_FeatherOLED _oled = Adafruit_FeatherOLED();
-  Adafruit_NeoPixel_ZeroDMA _strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
-
+  // Getters and Setters
   uint8_t get_addr() {
     return _addr;
   }
@@ -62,6 +61,10 @@ class Creature {
   int8_t* get_creature_distances() {
     return _creature_distances;
   }
+
+  RH_RF69 _rf69 = RH_RF69(RFM69_CS, RFM69_INT);
+  Adafruit_FeatherOLED _oled = Adafruit_FeatherOLED();
+  Adafruit_NeoPixel_ZeroDMA _strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
  private:
   // State& _current;
   uint8_t _kit_num, _addr, _last_startle_id;

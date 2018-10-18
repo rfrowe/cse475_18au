@@ -15,9 +15,7 @@ class State {
   State(const State&) = delete;
   State& operator=(State const&) = delete;
  protected:
-//   void loop(uint32_t dt);
-//   void rx();
-//   bool tx();
+  void loop(uint32_t dt);
 
   // Packet receivers
   void rx_set_globals(uint8_t* payload);
