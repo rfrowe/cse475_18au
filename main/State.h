@@ -6,8 +6,7 @@ class State {
  public:
   // TODO: call set_globals with defaults in impl.
 
-
-  State(uint8_t addr) : _addr(addr) {}
+  State(Creature& creature) : _creature(creature) {}
   State(const State&) = delete;
   State& operator=(State const&) = delete;
  protected:
@@ -17,39 +16,32 @@ class State {
   bool tx();
 
   // Packet receivers
-  void rx_set_globals();
+  // void rx_set_globals(uint8_t* payload);
   void rx_stop();
-  void rx_start();
-  void rx_startle(uint8_t strength, startleID);
-  void rx_entered_state();
-  void rx_play_sound();
-  void rx_play_effect();
+  void rx_start(uint8_t mode);
+  void rx_play_sound(uint8_t sound_idx);
+  void rx_play_effect(uint8_t effect_idx);
+  void rx_broadcast_states(uint8_t* states);
+  void rx_startle(uint8_t strength, uint8_t id);
 
+  // Packet transmitters
+  void tx_entered_state(uint8_t old_state, uint8_t state);
+  void tx_startle(uint8_t strength);
+
+  // Event handlers
   // Called when PIR pin goes from LOW to HIGH.
   void PIR();
-
   // Called when this creature is startled. Should set
   void startled();
-
   // Called when a sound should be played
-  void playSound(uint8_t sound_idx, bool);
+  void playSound(uint8_t sound_idx, bool broadcast);
+  // Called when an effect should be displayed
+  void playEffect(unt8_t effect_idx, bool broadcast);
  private:
+  static uint8_t*& _localWeights;
+  static uint8_t*& _globalWeights;
+  static uint8_t _startleDecay;
+  uint8_t _repeat_state;
 
-   static uint8_t*& _getLocalWeights();
-
-   static uint8_t*& _getGlobalWeights();
-
-  // Transmit
-  void _tx();
-  // Receive
-  void _rx();
-
-  // dt = Difference in time
-  void _loop(uint32_t dt);
-
-  uint8_t _addr, _last_startle_id, _repeat_state, _startle_threshold;
-
-  uint32_t _last_startle, _last_loop;
-
-  State _next;
+  Creature& _creature;
 }
