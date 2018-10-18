@@ -7,6 +7,9 @@
 
 class Creature;
 
+#define ACTIVE_STATES 3
+#define AMBIENT_STATES 3
+
 class State {
  public:
   // TODO: call set_globals with defaults in impl.
@@ -39,10 +42,25 @@ class State {
   void playSound(uint8_t sound_idx, bool broadcast);
   // Called when an effect should be displayed
   void playEffect(uint8_t effect_idx, bool broadcast);
+
+  // Returns a valid state in case a creature broadcasts an invalid state value
+  uint8_t get_creature_state(uint8_t creature) {
+    uint8_t creature_state = _creature._creature_states[creature];
+    if (creature_state == 0xFF || creature_state = 0x00) {
+      return creature_state;
+    } else if (creature_state % 2 == 0 && creature_state > ACTIVE_STATES * 2) {
+      return 2;
+    } else if (creature_state % 2 == 1 && creature_state > AMBIENT_STATES * 2 - 1) {
+      return 1;
+    } else {
+      return creature_state;
+    }
+  }
+
  private:
-//   static uint8_t* _localWeights;
-//   static uint8_t* _globalWeights;
-  static uint8_t _startleDecay;
+  static uint8_t* _localWeights; // should be size ACTIVE_STATES + AMBIENT_STATES
+  static uint8_t* _globalWeights; // should be size ACTIVE_STATES + AMBIENT_STATES
+  static uint8_t  _startleDecay;
   uint8_t _repeat_state;
 
   Creature& _creature;

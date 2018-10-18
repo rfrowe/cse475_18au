@@ -69,8 +69,8 @@ class Creature {
   // State& _current;
   uint8_t _kit_num, _addr, _last_startle_id;
   uint32_t _last_startle, _last_loop;
-  uint8_t* _creature_states;
-  int8_t* _creature_distances;
+  uint8_t* _creature_states; // Should be size NUM_CREATURES
+  int8_t* _creature_distances; // Should be size NUM_CREATURES
 };
 
 #endif  // _CREATURE_H_
