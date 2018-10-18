@@ -1,5 +1,6 @@
 #include <cinttypes>
 
+#include <Adafruit_FeatherOLED.h>
 #include <Adafruit_NeoPixel_ZeroDMA.h>
 #include <RH_RF69.h>
 #include <Wire.h>
@@ -11,7 +12,7 @@
 #define LED_PIN 13
 
 #define NEOPIXEL_PIN 19
-#define NEOPIXEL_COUNT 16
+w#define NEOPIXEL_COUNT 16
 
 #define RFM69_FREQ 915.0
 #define RFM69_CS 8
@@ -24,7 +25,7 @@ class Creature {
    Creature(const Creature&) = delete;
    Creature& operator=(Creature const&) = delete;
 
-   RH_RF69 rf69(RFM69_CS, RFM69_INT);
+   RH_RF69 rf69 = new RH_RF69(RFM69_CS, RFM69_INT);
    Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
    Adafruit_NeoPixel_ZeroDMA strip(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
  private:

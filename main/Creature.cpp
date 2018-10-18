@@ -37,7 +37,7 @@ Creature::Creature(uint8_t kit_num) {
   digitalWrite(RFM69_RST, LOW);
   delay(10);
 
-  if (!rf69.init() || !rf69.setFrequency(RF69_FREQ)) {
+  if (!rf69.init() || !rf69.setFrequency(RFM69_FREQ)) {
     Serial.println("RFM69 radio init failed");
     while (1);
   }
@@ -47,5 +47,5 @@ Creature::Creature(uint8_t kit_num) {
                    0xf7, 0xf2, 0x18, 0xc3, 0x5c, 0xce, 0x96, 0x65};
   rf69.setEncryptionKey(key);
 
-  Serial.println("RFM69 radio @ %d MHz", (int) RF69_FREQ);
+  Serial.printf("RFM69 radio @ %d MHz\n", (int) RFM69_FREQ);
 }

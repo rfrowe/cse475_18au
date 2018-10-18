@@ -16,7 +16,7 @@ class State {
   void rx_set_globals();
   void rx_stop();
   void rx_start();
-  void rx_spook(uint8_t strength, spookID);
+  void rx_spook(uint8_t strength, uint8_t spookID);
   void rx_entered_state();
   void rx_play_sound();
   void rx_play_effect();
