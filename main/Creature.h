@@ -12,7 +12,7 @@
 #define LED_PIN 13
 
 #define NEOPIXEL_PIN 19
-w#define NEOPIXEL_COUNT 16
+#define NEOPIXEL_COUNT 16
 
 #define RFM69_FREQ 915.0
 #define RFM69_CS 8

@@ -12,7 +12,7 @@ Creature::Creature(uint8_t kit_num) {
 
   delay(100);
   pinMode(LED_PIN, OUTPUT);
-  ponMode(ID_PIN, INPUT);
+  pinMode(ID_PIN, INPUT);
 
   oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
   oled.display();
@@ -29,7 +29,7 @@ Creature::Creature(uint8_t kit_num) {
 
   Serial.begin(115200);
 
-  pinMode(RFM69_RRST, OUTPUT);
+  pinMode(RFM69_RST, OUTPUT);
   digitalWrite(RFM69_RST, LOW);
   // Manual reset
   digitalWrite(RFM69_RST, HIGH);
