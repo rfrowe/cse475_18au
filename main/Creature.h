@@ -70,7 +70,7 @@ class Creature {
 
   /**
    * Transmits a packet to dst_addr from this creature.
-   * 
+   *
    * @param pid Packet identifier.
    * @param dst_addr  Address of the intended recipient of this packet.
    * @param len Length of the payload, in bytes
@@ -82,10 +82,13 @@ class Creature {
   /**
    * Sets the next state to transition into. If this is set, the next loop will trigger
    * a transition into this state.
-   * 
+   *
    * @param next  State to transition into.
    */
   void setNextState(State* const next) {
+    if (_next != nullptr && next != _next) {
+      delete _next;
+    }
     _next = next;
   }
 
@@ -132,7 +135,7 @@ class Creature {
 
   /**
    * Handles the receipt of a packet.
-   * 
+   *
    * @param pid Packet identifier of the received packet.
    * @param src_addr  Address of the packet's sender
    * @param len Length of the payload, in bytes.
@@ -147,16 +150,16 @@ class Creature {
   /** Stops the creature by transitioning to WAIT */
   void _rxStop();
 
-  /** 
+  /**
    *  Starts the creature by transitioning to the next appropriate state baseed on mode.
-   *  
+   *
    *  @params payload  Should be mode to start in. 0x8XXX for continue, 0x0000 for random start, 0x00XX for state XX.
    */
   bool _rxStart(uint8_t len, uint8_t* payload);
 
   /**
    * Called when all states are broadcast by the controller. Should update this->_creatureStates.
-   * 
+   *
    * @param payload  Should be an array of GLOBALS.NUM_CREATURES + 1 states for the states of creatures
    * 0 through NUM_CREATURES.
    */
@@ -165,11 +168,13 @@ class Creature {
   /**
    * Transmits an EnteredState packet to notify the controller that this creature
    * transitioned from oldState to newState.
-   * 
+   *
    * @param oldState  State we're transitioning from.
    * @param newState  State we're transitioning to.
    */
   void _txEnteredState(uint8_t oldState, uint8_t newState);
+
+  void _transition(State* const state);
 
   /** Measures battery voltage and updates OLED */
   void _updateBatteryDisplay();
@@ -182,7 +187,7 @@ class Creature {
   /** Random id of last startle that startled this creature */
   uint8_t _lastStartleId;
 
-  /** 
+  /**
    * Threshold for startles. Should be updated during startle based on time since last startle,
    * STARTLE_THRESHOLD_DECAY, and the current state's startle factor.
    */

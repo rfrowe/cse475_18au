@@ -37,30 +37,16 @@ void Creature::loop() {
   if (dt > GLOBALS.CYCLE_TIME) {
     if (_next != NULL) {
       // We have a predefined next state, transition immediately
-      State* const tmp = _state;
-      _state = _next;
-      if (tmp != nullptr) {
-        delete tmp;
-      }
-
+      _transition(_next);
       _next = nullptr;
-      _remainingRepeats = _state->getNumRepeats();
     } else if (_remainingRepeats > 0) {
       // This state should be repeated more. Call loop and decrement
-      _state->loop(dt);
       _remainingRepeats--;
     } else {
       // We're out of repeats, do a transition
-      State* const tmp = _state;
-      _state = _state->transition();
-      _txEnteredState(tmp->getStateId(), _state->getStateId());
-      if (tmp != nullptr && tmp != _state) {
-        delete tmp;
-      }
-
-      _state->loop(dt);
-      _remainingRepeats = _state->getNumRepeats();
+      _transition(_state->transition());
     }
+    _state->loop(dt);
 
     _lastLoop = thisLoop;
   }
@@ -111,7 +97,7 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
   }
 
   uint8_t numCreatures = GLOBALS.NUM_CREATURES;
-  
+
   GLOBALS = *(struct Globals *) payload;
 
   dprintln(F("Setting globals:"));
@@ -185,7 +171,7 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
 
   for (uint8_t* i = &_buf[3]; i < &_buf[len + 3]; i++) {
     dprint(*i, HEX);
-    dprint(' ');   
+    dprint(' ');
   }
   dprintln();
 
@@ -237,7 +223,7 @@ void Creature::_pollRadio() {
     if (_buf[len - 1] == 0) {
       dprintln((char*) &_buf[3]);
     }
-  
+
     Serial.println();
     Serial.println();
 
@@ -253,6 +239,20 @@ void Creature::_pollRadio() {
   }
 }
 
+void Creature::_transition(State* const state) {
+  State* const tmp = _state;
+  _state = _state->transition();
+
+  if (tmp != nullptr) {
+    _txEnteredState(tmp->getStateId(), _state->getStateId());
+  }
+
+  if (tmp != nullptr && tmp != _state) {
+    delete tmp;
+  }
+
+  _remainingRepeats = _state->getNumRepeats();
+}
 // Returns current battery voltage
 inline float getBatteryVoltage() {
   return analogRead(VBAT_PIN)  * 2 * VREF / 1024;
@@ -315,4 +315,3 @@ Creature::~Creature() {
   delete _creatureDistances;
   delete _creatureStates;
 }
-
