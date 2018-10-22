@@ -140,9 +140,10 @@ class Creature {
    * @param src_addr  Address of the packet's sender
    * @param len Length of the payload, in bytes.
    * @param payload Packet payload as an array of bytes.
+   * @param rssi  Signal strength of received packet, in db.
    * @returns true iff the packet was handled successfully, false otherwise.
    */
-  bool _rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload);
+  bool _rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, int8_t rssi);
 
   /** Handles updating GLOBALS */
   bool _rxSetGlobals(uint8_t len, uint8_t* payload);
@@ -175,6 +176,14 @@ class Creature {
   void _txEnteredState(uint8_t oldState, uint8_t newState);
 
   void _transition(State* const state);
+
+  /**
+   * Updates the running distance measure in _creatureDistances.
+   * 
+   * @param addr  Address of the creature to update.
+   * @param rssi  Signal strength measurement from latest tx.
+   */
+  void _updateDistance(uint8_t addr, int8_t rssi);
 
   /** Measures battery voltage and updates OLED */
   void _updateBatteryDisplay();

@@ -23,6 +23,10 @@ Creature::Creature() {
   _kitNum = KIT_NUM;
   _addr = 2 * KIT_NUM  - digitalRead(ID_PIN);
 
+  // Parens zero initialize
+  _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
+  _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES + 1]();
+
   _lastStartle = millis();
   _lastLoop = millis();
 }
@@ -52,7 +56,9 @@ void Creature::loop() {
   }
 }
 
-bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload) {
+bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, int8_t rssi) {
+  _updateDistance(srcAddr, rssi);
+
   // TODO: implement to call appropriate state functions.
   switch (pid) {
     case PID_SET_GLOBALS:
@@ -86,6 +92,10 @@ bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload) 
   }
 }
 
+void Creature::_updateDistance(uint8_t addr, int8_t rssi) {
+  // TODO: implement
+}
+
 bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
   if (len != sizeof(struct Globals)) {
     Serial.print(F("Received SetGlobals payload of length "));
@@ -116,10 +126,13 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
     dprint(numCreatures);
     dprint(F(" to "));
     dprintln(GLOBALS.NUM_CREATURES);
+
     delete _creatureStates;
     delete _creatureDistances;
-    _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES];
-    _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES];
+
+    // Parens zero initialize.
+    _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
+    _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES + 1]();
   }
 
   return true;
@@ -228,7 +241,7 @@ void Creature::_pollRadio() {
     Serial.println();
 
     if (dstAddr == _addr || dstAddr == BROADCAST_ADDR) {
-      if (!_rx(pid, srcAddr, len - 3, &_buf[3])) {
+      if (!_rx(pid, srcAddr, len - 3, &_buf[3], _rf69.lastRssi())) {
         Serial.println(F("Packet not handled correctly. Payload dump:"));
         for (uint8_t* i = &_buf[3]; i < &_buf[len]; i++) {
           Serial.print(*i, HEX);
