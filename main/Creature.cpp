@@ -14,7 +14,7 @@ Creature::Creature() {
   _state = nullptr;
 
   if (KIT_NUM < 0) {
-    Serial.print("Invalid kit number: ");
+    Serial.print(F("Invalid kit number: "));
     Serial.println();
     while (1);
   }
@@ -46,13 +46,10 @@ void Creature::loop() {
       _next = nullptr;
       _remainingRepeats = _state->getNumRepeats();
     } else if (_remainingRepeats > 0) {
-      Serial.print("looping ");
-      Serial.println(_remainingRepeats);
       // This state should be repeated more. Call loop and decrement
       _state->loop(dt);
       _remainingRepeats--;
     } else {
-      Serial.println("transition");
       // We're out of repeats, do a transition
       State* const tmp = _state;
       _state = _state->transition();
@@ -60,7 +57,8 @@ void Creature::loop() {
       if (tmp != nullptr && tmp != _state) {
         delete tmp;
       }
- 
+
+      _state->loop(dt);
       _remainingRepeats = _state->getNumRepeats();
     }
 
@@ -96,7 +94,7 @@ bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload) 
       // TODO: Implement
       return true;
     default:
-      Serial.print("Received packet of unknown type: ");
+      Serial.print(F("Received packet of unknown type: "));
       Serial.print(pid, HEX);
       return false;
   }
@@ -104,11 +102,11 @@ bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload) 
 
 bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
   if (len != sizeof(struct Globals)) {
-    Serial.print("Received SetGlobals payload of length ");
+    Serial.print(F("Received SetGlobals payload of length "));
     Serial.print(len);
-    Serial.print(" when sizeof(Globals) = ");
+    Serial.print(F(" when sizeof(Globals) = "));
     Serial.print(sizeof(Globals));
-    Serial.println(" was expected");
+    Serial.println(F(" was expected"));
     return false;
   }
 
@@ -116,16 +114,16 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
   
   GLOBALS = *(struct Globals *) payload;
 
-  dprintln("Setting globals:");
-  dprint("\tTX_POWER"); dprintln(GLOBALS.TX_POWER);
-  dprint("\tSTARTLE_RAND_MIN"); dprintln(GLOBALS.STARTLE_RAND_MIN);
-  dprint("\tSTARTLE_RAND_MAX"); dprintln(GLOBALS.STARTLE_RAND_MAX);
-  dprint("\tSTARTLE_MAX"); dprintln(GLOBALS.STARTLE_MAX);
-  dprint("\tSTARTLE_THRESHOLD"); dprintln(GLOBALS.STARTLE_THRESHOLD);
-  dprint("\tSTARTLE_THRESHOLD_DECAY"); dprintln(GLOBALS.STARTLE_THRESHOLD_DECAY);
-  dprint("\tSTARTLE_DECAY"); dprintln(GLOBALS.STARTLE_DECAY);
-  dprint("\tNUM_CREATURES"); dprintln(GLOBALS.NUM_CREATURES);
-  dprint("\tCYCLE_TIME"); dprintln(GLOBALS.CYCLE_TIME);
+  dprintln(F("Setting globals:"));
+  dprint(F("\tTX_POWER")); dprintln(GLOBALS.TX_POWER);
+  dprint(F("\tSTARTLE_RAND_MIN")); dprintln(GLOBALS.STARTLE_RAND_MIN);
+  dprint(F("\tSTARTLE_RAND_MAX")); dprintln(GLOBALS.STARTLE_RAND_MAX);
+  dprint(F("\tSTARTLE_MAX")); dprintln(GLOBALS.STARTLE_MAX);
+  dprint(F("\tSTARTLE_THRESHOLD")); dprintln(GLOBALS.STARTLE_THRESHOLD);
+  dprint(F("\tSTARTLE_THRESHOLD_DECAY")); dprintln(GLOBALS.STARTLE_THRESHOLD_DECAY);
+  dprint(F("\tSTARTLE_DECAY")); dprintln(GLOBALS.STARTLE_DECAY);
+  dprint(F("\tNUM_CREATURES")); dprintln(GLOBALS.NUM_CREATURES);
+  dprint(F("\tCYCLE_TIME")); dprintln(GLOBALS.CYCLE_TIME);
 
   if (numCreatures != GLOBALS.NUM_CREATURES) {
     dprint(F("Resizing creature arrays from "));
@@ -176,13 +174,13 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
   _buf[2] = dst_addr;
   memcpy(_buf + 3, payload, len);
 
-  Serial.print("Sending pid 0x");
+  Serial.print(F("Sending pid 0x"));
   Serial.print(pid, HEX);
-  Serial.print(" with ");
+  Serial.print(F(" with "));
   Serial.print(len);
-  Serial.print(" bytes to address ");
+  Serial.print(F(" bytes to address "));
   Serial.print(dst_addr);
-  Serial.print(" from address ");
+  Serial.print(F(" from address "));
   Serial.println(_addr);
 
   for (uint8_t* i = &_buf[3]; i < &_buf[len + 3]; i++) {
@@ -262,7 +260,7 @@ inline float getBatteryVoltage() {
 
 void Creature::_updateBatteryDisplay() {
   float voltage = getBatteryVoltage();
-  dprint("Current battery voltage: ");
+  dprint(F("Current battery voltage: "));
   dprintln(voltage);
 
   oled.setBattery(voltage);

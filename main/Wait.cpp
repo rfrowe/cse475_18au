@@ -3,7 +3,7 @@
 constexpr uint8_t Wait::_localWeights[];
 
 uint8_t Wait::getNumRepeats() {
- return 10;
+ return 0;
 }
 
 State* Wait::transition() {
@@ -15,7 +15,7 @@ uint8_t Wait::getStateId() {
 }
 
 void Wait::loop(uint32_t dt) {
-  Serial.println("Waiting...");
+  Serial.println(F("Waiting..."));
 }
 
 const uint8_t* Wait::getLocalWeights() {
