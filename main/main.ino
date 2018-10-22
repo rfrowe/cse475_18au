@@ -1,8 +1,6 @@
 #include "Creature.h"
 
-#define KIT_NUM 10
-
-Creature c(KIT_NUM);
+Creature c;
 
 void setup() {
   Serial.begin(115200);

@@ -7,7 +7,8 @@
 #include <Adafruit_NeoPixel_ZeroDMA.h>
 #include <RH_RF69.h>
 #include <Wire.h>
-#include "State.h"
+
+class State;
 
 #define VREF 3.3
 
@@ -25,10 +26,19 @@
 #define CONTROLLER_ADDR 0x00
 #define BROADCAST_ADDR 0xFF
 
-typedef struct Globals {
+#define PID_SET_GLOBALS 0x0
+#define PID_STOP 0x1
+#define PID_START 0x2
+#define PID_PLAY_SOUND 0x3
+#define PID_PLAY_EFFECT 0x4
+#define PID_BROADCAST_STATES 0x5
+#define PID_STARTLE 0x6
+#define PID_SEND_STATE 0x7
+
+struct Globals {
   uint16_t TX_POWER;
-  uint8_t STARTLE RAND_MIN;
-  uint8_t STARTLE RAND_MAX;
+  uint8_t STARTLE_RAND_MIN;
+  uint8_t STARTLE_RAND_MAX;
   uint8_t STARTLE_MAX;
   uint8_t STARTLE_THRESHOLD;
   float STARTLE_THRESHOLD_DECAY;
@@ -39,53 +49,162 @@ typedef struct Globals {
 
 class Creature {
  public:
-  Creature(uint8_t kit_num);
+  Creature();
   Creature(const Creature&) = delete;
   Creature& operator=(Creature const&) = delete;
+  ~Creature();
 
-  void setup();
-  bool rx(uint8_t pid, uint8_t src_addr, uint8_t len, uint8_t* payload);
-  bool tx(uint8_t pid, uint8_t dst_addr, uint8_t len, uint8_t* payload);
+  Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
+  Adafruit_NeoPixel_ZeroDMA strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
+  struct Globals GLOBALS = {
+    /* TX_POWER */                  14,
+    /* STARTLE_RAND_MIN */          100,
+    /* STARTLE_RAND_MAX */          200,
+    /* STARTLE_MAX */               255,
+    /* STARTLE_THRESHOLD */         150,
+    /* STARTLE_THRESHOLD_DECAY */   0.9,
+    /* STARTLE_DECAY */             30,
+    /* NUM_CREATURES */             30,
+    /* CYCLE_TIME */                100, // ms
+  };
+
+  /**
+   * Transmits a packet to dst_addr from this creature.
+   * 
+   * @param pid Packet identifier.
+   * @param dst_addr  Address of the intended recipient of this packet.
+   * @param len Length of the payload, in bytes
+   * @param payload An array of bytes to use as the payload.
+   * @returns true iff the packet was successfully sent, false otherwise.
+   */
+  bool tx(const uint8_t pid, const uint8_t dstAddr, const uint8_t len, const uint8_t*  payload);
+
+  /**
+   * Sets the next state to transition into. If this is set, the next loop will trigger
+   * a transition into this state.
+   * 
+   * @param next  State to transition into.
+   */
+  void setNextState(State* const next) {
+    _next = next;
+  }
 
   // Getters and Setters
-  uint8_t get_addr() {
+  uint8_t getAddr() {
     return _addr;
   }
 
-  uint8_t get_last_startle_id() {
-    return _last_startle_id;
+  uint8_t getLastStartleId() {
+    return _lastStartleId;
   }
 
-  void set_last_startle_id(uint8_t startle_id) {
-    _last_startle_id = startle_id;
+  void setLastStartleId(uint8_t startleId) {
+    _lastStartleId = startleId;
   }
 
-  uint32_t get_last_startle() {
-    return _last_startle;
+  uint32_t getLastStartle() {
+    return _lastStartle;
   }
 
-  void set_last_startle(uint32_t last_startle) {
-    _last_startle = last_startle;
+  void setLastStartlee(uint32_t lastStartle) {
+    _lastStartle = lastStartle;
   }
 
-  uint8_t* get_creature_states() {
-    return _creature_states;
+  uint8_t* getCreatureStates() {
+    return _creatureStates;
   }
 
-  int8_t* get_creature_distances() {
-    return _creature_distances;
+  int8_t* getCreatureDistances() {
+    return _creatureDistances;
   }
 
-  RH_RF69 rf69 = RH_RF69(RFM69_CS, RFM69_INT);
-  Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
-  Adafruit_NeoPixel_ZeroDMA strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
-  Globals GLOBALS;
+    // Run after construction but before loop.
+  void setup();
+
+  // Called during main loop.
+  void loop();
  private:
-  // State& _current;
-  uint8_t _kit_num, _addr, _last_startle_id, _num_repeats;
-  uint32_t _last_startle, _last_loop;
-  uint8_t* _creature_states; // Should be size NUM_CREATURES
-  int8_t* _creature_distances; // Should be size NUM_CREATURES
+  /**
+   * Called during loop to poll radio for new received packets. Calls Creature::rx with any
+   * received packets that were intended for this creature.
+   */
+  void _pollRadio();
+
+  /**
+   * Handles the receipt of a packet.
+   * 
+   * @param pid Packet identifier of the received packet.
+   * @param src_addr  Address of the packet's sender
+   * @param len Length of the payload, in bytes.
+   * @param payload Packet payload as an array of bytes.
+   * @returns true iff the packet was handled successfully, false otherwise.
+   */
+  bool _rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload);
+
+  /** Handles updating GLOBALS */
+  bool _rxSetGlobals(uint8_t len, uint8_t* payload);
+
+  /** Stops the creature by transitioning to WAIT */
+  void _rxStop();
+
+  /** 
+   *  Starts the creature by transitioning to the next appropriate state baseed on mode.
+   *  
+   *  @params payload  Should be mode to start in. 0x8XXX for continue, 0x0000 for random start, 0x00XX for state XX.
+   */
+  bool _rxStart(uint8_t len, uint8_t* payload);
+
+  /**
+   * Called when all states are broadcast by the controller. Should update this->_creatureStates.
+   * 
+   * @param payload  Should be an array of GLOBALS.NUM_CREATURES + 1 states for the states of creatures
+   * 0 through NUM_CREATURES.
+   */
+  bool _rxBroadcastStates(uint8_t len, uint8_t* payload);
+
+  /**
+   * Transmits an EnteredState packet to notify the controller that this creature
+   * transitioned from oldState to newState.
+   * 
+   * @param oldState  State we're transitioning from.
+   * @param newState  State we're transitioning to.
+   */
+  void _txEnteredState(uint8_t oldState, uint8_t newState);
+
+  /** Measures battery voltage and updates OLED */
+  void _updateBatteryDisplay();
+
+  /** Current and next state, or null if no next state */
+  State *_state, *_next;
+
+  uint8_t _kitNum, _addr;
+
+  /** Random id of last startle that startled this creature */
+  uint8_t _lastStartleId;
+
+  /** 
+   * Threshold for startles. Should be updated during startle based on time since last startle,
+   * STARTLE_THRESHOLD_DECAY, and the current state's startle factor.
+   */
+  uint8_t _startleThreshold;
+
+  /** Number of times the current state should be repeated */
+  uint8_t _remainingRepeats;
+
+  /** Timestamps for last startle and last loop execution */
+  uint32_t _lastStartle, _lastLoop;
+
+  /** State ids for all creatures 0 through NUM_CREATURES. Should be of size GLOBALS.NUM_CREATURES + 1 */
+  uint8_t *_creatureStates;
+
+  /** Running average of pseudodistance (RSSI) for all creatures 0 through NUM_CREATURES. Should be of size GLOBALS.NUM_CREATURES + 1 */
+  int8_t *_creatureDistances;
+
+  /** Buffer used for radio tx/rx. */
+  uint8_t _buf[RH_RF69_MAX_MESSAGE_LEN] = {0};
+
+  /** Radio object for tx/rx */
+  RH_RF69 _rf69 = RH_RF69(RFM69_CS, RFM69_INT);
 };
 
 #endif  // _CREATURE_H_
