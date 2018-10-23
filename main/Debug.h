@@ -1,7 +1,7 @@
-#ifndef DEGBUG
+#ifndef DEBUG
 
 // Enables serial debugging
-//#define DEBUG
+#define DEBUG
 
 // Disables serial debugging if DEBUG not defined
 #ifdef DEBUG
