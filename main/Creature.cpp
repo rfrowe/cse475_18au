@@ -45,12 +45,13 @@ void Creature::loop() {
       _next = nullptr;
     } else if (_remainingRepeats > 0) {
       // This state should be repeated more. Call loop and decrement
+      _state->loop(dt);
       _remainingRepeats--;
     } else {
       // We're out of repeats, do a transition
       _transition(_state->transition());
+      _state->loop(dt);
     }
-    _state->loop(dt);
 
     _lastLoop = thisLoop;
   }
@@ -253,19 +254,24 @@ void Creature::_pollRadio() {
 }
 
 void Creature::_transition(State* const state) {
-  State* const tmp = _state;
-  _state = _state->transition();
+  State* const old = _state;
+  _state = state;
 
-  if (tmp != nullptr) {
-    _txEnteredState(tmp->getStateId(), _state->getStateId());
+  if (_state != nullptr && _state != state) {
+    delete _state;
   }
 
-  if (tmp != nullptr && tmp != _state) {
-    delete tmp;
+  if (old != nullptr) {
+    _txEnteredState(old->getStateId(), state->getStateId());
+  }
+
+  if (old != nullptr && old != state) {
+    delete old;
   }
 
   _remainingRepeats = _state->getNumRepeats();
 }
+
 // Returns current battery voltage
 inline float getBatteryVoltage() {
   return analogRead(VBAT_PIN)  * 2 * VREF / 1024;
