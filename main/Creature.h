@@ -77,7 +77,7 @@ class Creature {
    * @param payload An array of bytes to use as the payload.
    * @returns true iff the packet was successfully sent, false otherwise.
    */
-  bool tx(const uint8_t pid, const uint8_t dstAddr, const uint8_t len, const uint8_t*  payload);
+  bool tx(const uint8_t pid, const uint8_t dstAddr, const uint8_t len, uint8_t* const payload);
 
   /**
    * Sets the next state to transition into. If this is set, the next loop will trigger
@@ -167,13 +167,13 @@ class Creature {
   bool _rxBroadcastStates(uint8_t len, uint8_t* payload);
 
   /**
-   * Transmits an EnteredState packet to notify the controller that this creature
+   * Transmits an SendState packet to notify the controller that this creature
    * transitioned from oldState to newState.
    *
    * @param oldState  State we're transitioning from.
    * @param newState  State we're transitioning to.
    */
-  void _txEnteredState(uint8_t oldState, uint8_t newState);
+  void _txSendState(uint8_t oldState, uint8_t newState);
 
   /**
    * Transitions this creature from it's current state to the provided state.

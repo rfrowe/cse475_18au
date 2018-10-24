@@ -159,7 +159,7 @@ bool Creature::_rxBroadcastStates(uint8_t len, uint8_t* payload) {
   return true;
 }
 
-bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, const uint8_t*  payload) {
+bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, uint8_t* const payload) {
   if (len + 3 > RH_RF69_MAX_MESSAGE_LEN) {
     Serial.print(F("Packet length "));
     Serial.print(len);
@@ -200,8 +200,9 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
   return true;
 }
 
-void Creature::_txEnteredState(uint8_t oldState, uint8_t newState) {
-  // TODO: implement
+void Creature::_txSendState(uint8_t oldState, uint8_t newState) {
+  uint8_t payload[] = {oldState, newState};
+  tx(PID_SEND_STATE, CONTROLLER_ADDR, sizeof(payload), payload);
 }
 
 void Creature::_pollRadio() {
@@ -223,7 +224,7 @@ void Creature::_pollRadio() {
     Serial.print(F("Received pid 0x"));
     Serial.print(pid, HEX);
     Serial.print(F(" with "));
-    Serial.print(len);
+    Serial.print(len - 3);
     Serial.print(F(" bytes from address "));
     Serial.print(srcAddr);
     Serial.print(F(" for address "));
@@ -257,14 +258,13 @@ void Creature::_transition(State* const state) {
   State* const old = _state;
   _state = state;
 
-  if (_state != nullptr && _state != state) {
-    delete _state;
-  }
-
-  _txEnteredState(old == nullptr ? 0 : old->getStateId(), state->getStateId());
-
-  if (old != nullptr && old != state) {
-    delete old;
+  if (state != old) {
+    if (old != nullptr) {
+      delete old;
+      _txSendState(old->getStateId(), state->getStateId());
+    } else {
+      _txSendState(0, state->getStateId());
+    }
   }
 
   _remainingRepeats = _state->getNumRepeats();

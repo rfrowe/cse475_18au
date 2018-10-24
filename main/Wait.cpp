@@ -3,7 +3,7 @@
 constexpr uint8_t Wait::_localWeights[];
 
 uint8_t Wait::getNumRepeats() {
- return 0;
+ return 255;
 }
 
 State* Wait::transition() {
