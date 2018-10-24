@@ -261,9 +261,7 @@ void Creature::_transition(State* const state) {
     delete _state;
   }
 
-  if (old != nullptr) {
-    _txEnteredState(old->getStateId(), state->getStateId());
-  }
+  _txEnteredState(old == nullptr ? 0 : old->getStateId(), state->getStateId());
 
   if (old != nullptr && old != state) {
     delete old;
