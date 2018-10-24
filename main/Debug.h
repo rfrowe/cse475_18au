@@ -1,5 +1,3 @@
-#ifndef DEBUG
-
 // Enables serial debugging
 #define DEBUG
 
@@ -12,7 +10,5 @@
   #define dprintln(A...)
   #define dprintf(A...)
   #define dprint(A...)
-#endif
-
 #endif
 

@@ -175,11 +175,18 @@ class Creature {
    */
   void _txEnteredState(uint8_t oldState, uint8_t newState);
 
+  /**
+   * Transitions this creature from it's current state to the provided state.
+   * This also includes calling _txEnteredState, calling the current state's
+   * destructor, and updating _remainingRepeats.
+   *
+   * @param state New state to transition into.
+   */
   void _transition(State* const state);
 
   /**
    * Updates the running distance measure in _creatureDistances.
-   * 
+   *
    * @param addr  Address of the creature to update.
    * @param rssi  Signal strength measurement from latest tx.
    */
