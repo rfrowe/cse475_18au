@@ -39,6 +39,8 @@ void Creature::loop() {
 
   // Only trigger state loops and transitions every CYCLE_TIME ms
   if (dt > GLOBALS.CYCLE_TIME) {
+    _updateBatteryDisplay();
+
     if (_next != NULL) {
       // We have a predefined next state, transition immediately
       _transition(_next);
