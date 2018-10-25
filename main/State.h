@@ -24,14 +24,14 @@ class State {
   /**
    * Computes probability distribution for state transitions, generates a random
    * number, and uses this to produce the next state we should transition into.
-   * 
+   *
    * @returns State object for next state to transition into.
    */
   virtual State* transition();
 
   /**
-   * Called every GLOBALS.CYCLE_TIME ms. Should not perform long actions. 
-   * 
+   * Called every GLOBALS.CYCLE_TIME ms. Should not perform long actions.
+   *
    * @params dt Difference in time, in milliseconds, since last call.
    */
   virtual void loop(uint32_t dt) = 0;
@@ -44,7 +44,7 @@ class State {
   /**
    * @returns Array of relative weights for transitions into all other states based on this creature’s
    * current state (higherweights being more likely). This is W from the spec.
-   * 
+   *
    * Note: It is recommended you implement this by adding a static array field to your class and return
    * a pointer to that.
    */
@@ -67,7 +67,7 @@ class State {
   // Packet transmitters
   /**
    * Transmit a startle packet.
-   * 
+   *
    * @param strength  Strength of the startle.
    * @param id  Randomly generated id for the startle.
    */
@@ -76,21 +76,21 @@ class State {
   // Packet receivers
   /**
    * Handle a PlaySound packet.
-   * 
+   *
    * @param payload Should be the sound index.
    */
   virtual bool rxPlaySound(uint8_t len, uint8_t* payload);
 
   /**
    * Handle a PlayEffecy packet.
-   * 
+   *
    * @param payload Should be the effect index.
    */
   virtual bool rxPlayEffect(uint8_t len, uint8_t* payload);
 
   /**
    * Handle a Startle packet.
-   * 
+   *
    * @param payload Should be the startle strength and id.
    */
   virtual bool rxStartle(uint8_t len, uint8_t* payload) = 0;
@@ -106,24 +106,24 @@ class State {
    * _next state to the startle state.
    */
   virtual void startled() = 0;
-  
-  
+
+
   /**
    * Called when an sound should be displayed
-   * 
+   *
    * @param sound_idx  Sound index in sound array.
    */
   virtual void playSound(uint8_t sound_idx);
-  
+
   /**
    * Called when an effect should be displayed
-   * 
+   *
    * @param effect_idx  Effect index in effect array.
    */
   virtual void playEffect(uint8_t effect_idx);
 
   /** Reference to the creature this is a state in */
-  const Creature& _creature;
+  Creature& _creature;
 
   uint8_t _globalWeights[ACTIVE_STATES + AMBIENT_STATES] = { 0 };
 };
