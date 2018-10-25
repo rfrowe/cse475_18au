@@ -15,7 +15,7 @@ uint8_t Wait::getStateId() {
 }
 
 void Wait::loop(uint32_t dt) {
-  dprintln(F("Waiting..."));
+  Serial.println(F("Waiting..."));
 }
 
 const uint8_t* Wait::getLocalWeights() {
@@ -31,4 +31,3 @@ bool Wait::rxStartle(uint8_t len, uint8_t* payload) {}
 void Wait::PIR() {}
 
 void Wait::startled() {}
-
