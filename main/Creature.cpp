@@ -39,7 +39,7 @@ void Creature::loop() {
 
   // Only trigger state loops and transitions every CYCLE_TIME ms
   if (dt > GLOBALS.CYCLE_TIME) {
-    _updateBatteryDisplay();
+    _updateDisplay();
 
     if (_next != NULL) {
       // We have a predefined next state, transition immediately
@@ -277,13 +277,17 @@ inline float getBatteryVoltage() {
   return analogRead(VBAT_PIN)  * 2 * VREF / 1024;
 }
 
-void Creature::_updateBatteryDisplay() {
+void Creature::_updateDisplay() {
   float voltage = getBatteryVoltage();
   dprint(F("Current battery voltage: "));
   dprintln(voltage);
 
+  oled.clearDisplay();
   oled.setBattery(voltage);
   oled.renderBattery();
+  oled.setCursor(0, 0);
+  oled.print("Addr: ");
+  oled.println(_addr);
   oled.display();
 }
 
@@ -301,7 +305,7 @@ void Creature::setup() {
   oled.clearDisplay();
   oled.init();
   oled.setBatteryVisible(true);
-  _updateBatteryDisplay();
+  _updateDisplay();
 
   strip.begin();
   strip.setBrightness(5);
