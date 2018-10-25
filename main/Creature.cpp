@@ -279,8 +279,6 @@ inline float getBatteryVoltage() {
 
 void Creature::_updateDisplay() {
   float voltage = getBatteryVoltage();
-  dprint(F("Current battery voltage: "));
-  dprintln(voltage);
 
   oled.clearDisplay();
   oled.setBattery(voltage);

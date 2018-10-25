@@ -15,7 +15,7 @@ uint8_t Wait::getStateId() {
 }
 
 void Wait::loop(uint32_t dt) {
-  Serial.println(F("Waiting..."));
+  dprintln(F("Waiting..."));
 }
 
 const uint8_t* Wait::getLocalWeights() {
