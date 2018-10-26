@@ -19,6 +19,8 @@ class State;
 #define NEOPIXEL_PIN 19
 #define NEOPIXEL_COUNT 16
 
+#define OLED_WIDTH 21 // chars
+
 #define RFM69_FREQ 915.0
 #define RFM69_CS 8
 #define RFM69_INT 3
@@ -226,6 +228,7 @@ class Creature {
 
   /** Radio object for tx/rx */
   RH_RF69 _rf69 = RH_RF69(RFM69_CS, RFM69_INT);
+  uint8_t _txCount, _rxCount;
 };
 
 #endif  // _CREATURE_H_

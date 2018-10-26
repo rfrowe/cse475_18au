@@ -10,7 +10,7 @@ class Creature;
 
 class State {
  public:
-  State(Creature& creature) : _creature(creature) {};
+  State(Creature& creature, char* const name);
   State(const State&) = delete;
 
   /**
@@ -39,7 +39,12 @@ class State {
   /**
    * @returns the id of this state from 0x00 to 0xFF.
    */
-  virtual uint8_t getStateId();
+  virtual uint8_t getId() = 0;
+
+  /**
+   * @returns name of this state, capped to 16 chars.
+   */
+  virtual char* getName();
 
   /**
    * @returns Array of relative weights for transitions into all other states based on this creature’s
@@ -126,6 +131,8 @@ class State {
   Creature& _creature;
 
   uint8_t _globalWeights[ACTIVE_STATES + AMBIENT_STATES] = { 0 };
+ private:
+  char _name[17];
 };
 
 #endif  // _STATE_H_

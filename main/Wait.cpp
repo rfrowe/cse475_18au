@@ -1,4 +1,5 @@
 #include "Wait.h"
+#include "Debug.h"
 
 constexpr uint8_t Wait::_localWeights[];
 
@@ -10,8 +11,8 @@ State* Wait::transition() {
  return this;
 }
 
-uint8_t Wait::getStateId() {
-  return 0x0;
+uint8_t Wait::getId() {
+  return 0;
 }
 
 void Wait::loop(uint32_t dt) {
@@ -31,4 +32,3 @@ bool Wait::rxStartle(uint8_t len, uint8_t* payload) {}
 void Wait::PIR() {}
 
 void Wait::startled() {}
-

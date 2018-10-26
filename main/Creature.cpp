@@ -60,6 +60,7 @@ void Creature::loop() {
 }
 
 bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, int8_t rssi) {
+  _rxCount++;
   _updateDistance(srcAddr, rssi);
 
   // TODO: implement to call appropriate state functions.
@@ -199,6 +200,7 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
 
   _rf69.send((const uint8_t*) &_buf, len + 3);
   _rf69.waitPacketSent();
+  _txCount++;
   return true;
 }
 
@@ -263,9 +265,9 @@ void Creature::_transition(State* const state) {
   if (state != old) {
     if (old != nullptr) {
       delete old;
-      _txSendState(old->getStateId(), state->getStateId());
+      _txSendState(old->getId(), state->getId());
     } else {
-      _txSendState(0, state->getStateId());
+      _txSendState(0, state->getId());
     }
   }
 
@@ -283,9 +285,20 @@ void Creature::_updateDisplay() {
   oled.clearDisplay();
   oled.setBattery(voltage);
   oled.renderBattery();
+
   oled.setCursor(0, 0);
-  oled.print("Addr: ");
-  oled.println(_addr);
+  oled.print(F("TXRX:"));
+  oled.print(_txCount);
+  oled.print(F("/"));
+  oled.println(_rxCount);
+
+  oled.setCursor(0, 9);
+  oled.print(_state ? _state->getName() : "None");
+
+  oled.setCursor((OLED_WIDTH - 3) * 6, 9);
+  oled.print("#");
+  oled.print(_addr);
+
   oled.display();
 }
 
