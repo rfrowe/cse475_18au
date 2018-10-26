@@ -228,7 +228,10 @@ class Creature {
 
   /** Radio object for tx/rx */
   RH_RF69 _rf69 = RH_RF69(RFM69_CS, RFM69_INT);
+
   uint8_t _txCount, _rxCount;
+
+  float _battery;
 };
 
 #endif  // _CREATURE_H_

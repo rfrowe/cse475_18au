@@ -8,6 +8,12 @@
 // TODO: put your kit number here
 #define KIT_NUM 0
 
+// Returns current battery voltage
+inline float getBatteryVoltage() {
+  // Update battery field with a little weighting to stop rapid changes.
+  return analogRead(VBAT_PIN)  * 2 * VREF / 1024;
+}
+
 Creature::Creature() {
   // Initialize _next to be the Wait state, so we will immediately transition into it on the first loop.
   _next = new Wait(*this);
@@ -26,6 +32,8 @@ Creature::Creature() {
   // Parens zero initialize
   _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
   _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES + 1]();
+
+  _battery = getBatteryVoltage();
 
   _lastStartle = millis();
   _lastLoop = millis();
@@ -274,16 +282,11 @@ void Creature::_transition(State* const state) {
   _remainingRepeats = _state->getNumRepeats();
 }
 
-// Returns current battery voltage
-inline float getBatteryVoltage() {
-  return analogRead(VBAT_PIN)  * 2 * VREF / 1024;
-}
-
 void Creature::_updateDisplay() {
-  float voltage = getBatteryVoltage();
+  _battery = 0.95 * _battery + 0.05 * getBatteryVoltage();
 
   oled.clearDisplay();
-  oled.setBattery(voltage);
+  oled.setBattery(_battery);
   oled.renderBattery();
 
   oled.setCursor(0, 0);
