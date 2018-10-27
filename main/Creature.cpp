@@ -2,6 +2,7 @@
 #include "Debug.h"
 #include "State.h"
 #include "Wait.h"
+#include "Midi.h"
 
 #include <cmath>
 
@@ -346,6 +347,11 @@ void Creature::setup() {
   Serial.print(F("RFM69 radio @ "));
   Serial.print(RFM69_FREQ);
   Serial.println(F("MHz"));
+
+  // Setup MIDI
+  VS1053_MIDI.begin(31250);
+  Midi::tcConfigure(1000);  // Hz
+  Midi::tcStartCounter();
 }
 
 Creature::~Creature() {

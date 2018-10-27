@@ -1,5 +1,6 @@
 #include "Wait.h"
 #include "Debug.h"
+//#include "Midi.h"
 
 constexpr uint8_t Wait::_localWeights[];
 
@@ -16,7 +17,7 @@ uint8_t Wait::getId() {
 }
 
 void Wait::loop(uint32_t dt) {
-  dprintln(F("Waiting..."));
+//  dprintln(F("Waiting..."));
 }
 
 const uint8_t* Wait::getLocalWeights() {

@@ -8,6 +8,8 @@
 #include <RH_RF69.h>
 #include <Wire.h>
 
+#include "Midi.h"
+
 class State;
 
 #define VREF 3.3
@@ -123,7 +125,7 @@ class Creature {
     return _creatureDistances;
   }
 
-    // Run after construction but before loop.
+  // Run after construction but before loop.
   void setup();
 
   // Called during main loop.
