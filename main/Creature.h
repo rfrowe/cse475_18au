@@ -45,9 +45,9 @@ struct Globals {
   uint8_t STARTLE_RAND_MAX;
   uint8_t STARTLE_MAX;
   uint8_t STARTLE_THRESHOLD;
-  float STARTLE_THRESHOLD_DECAY;
   uint8_t STARTLE_DECAY;
   uint8_t NUM_CREATURES;
+  float STARTLE_THRESHOLD_DECAY;
   uint16_t CYCLE_TIME;
 };
 
@@ -61,15 +61,15 @@ class Creature {
   Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
   Adafruit_NeoPixel_ZeroDMA strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
   struct Globals GLOBALS = {
-    /* TX_POWER */                  14,
-    /* STARTLE_RAND_MIN */          100,
-    /* STARTLE_RAND_MAX */          200,
-    /* STARTLE_MAX */               255,
-    /* STARTLE_THRESHOLD */         150,
-    /* STARTLE_THRESHOLD_DECAY */   0.9,
-    /* STARTLE_DECAY */             30,
-    /* NUM_CREATURES */             30,
-    /* CYCLE_TIME */                100, // ms
+    /* TX_POWER */                  14,   // uint16_t
+    /* STARTLE_RAND_MIN */          100,  // uint8_t
+    /* STARTLE_RAND_MAX */          200,  // uint8_t
+    /* STARTLE_MAX */               255,  // uint8_t
+    /* STARTLE_THRESHOLD */         150,  // uint8_t
+    /* STARTLE_DECAY */             30,   // uint8_t
+    /* NUM_CREATURES */             30,   // uint8_t
+    /* STARTLE_THRESHOLD_DECAY */   0.9,  // float32
+    /* CYCLE_TIME in ms */          100,  // uint16_t
   };
 
   /**
