@@ -1,12 +1,12 @@
-#ifndef _WAIT_H_
-#define _WAIT_H_
+#ifndef _CONTROLLER_H_
+#define _CONTROLLER_H_
 
 #include "Creature.h"
 #include "State.h"
 
-class Wait : public State {
+class Controller : public State {
  public:
-  Wait(Creature& creature) : State(creature, "Wait") {}
+  Controller(Creature& creature) : State(creature, "Controller") {}
   uint8_t getNumRepeats();
   State* transition() override;
   void loop(uint32_t dt);
@@ -21,4 +21,4 @@ private:
   static constexpr uint8_t _localWeights[ACTIVE_STATES + AMBIENT_STATES] = { 0 };
 };
 
-#endif  // _WAIT_H_
+#endif  // _CONTROLLER_H_

@@ -37,17 +37,22 @@ class State;
 #define PID_STARTLE 0x6
 #define PID_SEND_STATE 0x7
 
+static const uint8_t GLOBALS_LEN = 9;
 struct Globals {
   uint16_t TX_POWER;
   uint8_t STARTLE_RAND_MIN;
   uint8_t STARTLE_RAND_MAX;
   uint8_t STARTLE_MAX;
   uint8_t STARTLE_THRESHOLD;
-  float STARTLE_THRESHOLD_DECAY;
   uint8_t STARTLE_DECAY;
   uint8_t NUM_CREATURES;
+  float STARTLE_THRESHOLD_DECAY;
   uint16_t CYCLE_TIME;
 };
+
+static const String GLOBALS_NAMES[GLOBALS_LEN] = {"TX_POWER", "STARTLE_RAND_MIN", "STARTLE_RAND_MAX", "STARTLE_MAX", "STARTLE_THRESHOLD", "STARTLE_DECAY", "NUM_CREATURES", "STARTLE_THRESHOLD_DECAY", "CYCLE_TIME"};
+
+static const uint8_t GLOBALS_OFFSETS[GLOBALS_LEN] = {0, 2, 3, 4, 5, 6, 7, 8, 12};
 
 class Creature {
  public:
@@ -59,15 +64,15 @@ class Creature {
   Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
   Adafruit_NeoPixel_ZeroDMA strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
   struct Globals GLOBALS = {
-    /* TX_POWER */                  14,
-    /* STARTLE_RAND_MIN */          100,
-    /* STARTLE_RAND_MAX */          200,
-    /* STARTLE_MAX */               255,
-    /* STARTLE_THRESHOLD */         150,
-    /* STARTLE_THRESHOLD_DECAY */   0.9,
-    /* STARTLE_DECAY */             30,
-    /* NUM_CREATURES */             30,
-    /* CYCLE_TIME */                100, // ms
+    /* TX_POWER */                  14,   // uint16_t
+    /* STARTLE_RAND_MIN */          100,  // uint8_t
+    /* STARTLE_RAND_MAX */          200,  // uint8_t
+    /* STARTLE_MAX */               255,  // uint8_t
+    /* STARTLE_THRESHOLD */         150,  // uint8_t
+    /* STARTLE_DECAY */             30,   // uint8_t
+    /* NUM_CREATURES */             30,   // uint8_t
+    /* STARTLE_THRESHOLD_DECAY */   0.9,  // float32
+    /* CYCLE_TIME */     /*ms*/     100,  // uint16_t
   };
 
   /**
@@ -129,6 +134,12 @@ class Creature {
   // Called during main loop.
   void loop();
  private:
+  void _receiveState(uint8_t src, uint8_t st);
+
+  void _processCommand();
+
+  int _get_int();
+ 
   /**
    * Called during loop to poll radio for new received packets. Calls Creature::rx with any
    * received packets that were intended for this creature.
