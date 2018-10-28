@@ -14,6 +14,9 @@ class Controller : public State {
   const uint8_t* getLocalWeights();
   float getStartleFactor();
 protected:
+  bool txStates();
+  bool txGlobals();
+
   bool rxStartle(uint8_t len, uint8_t* payload);
   void PIR();
   void startled();

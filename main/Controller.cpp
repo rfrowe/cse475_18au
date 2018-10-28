@@ -18,15 +18,27 @@ uint8_t Controller::getId() {
 void Controller::loop(uint32_t dt) {
   uint8_t * states = _creature.getCreatureStates();
   for (int i = 0; i < _creature.GLOBALS.NUM_CREATURES + 1; i++) {
-    Serial.print(i == 0 ? "" : ", ");
-    Serial.print(states[i]);
+    //Serial.print(i == 0 ? "" : ", ");
+    //Serial.print(states[i]);
   }
-  Serial.println();
+  //Serial.println();
 
-
+  txGlobals();
 
   
   //dprintln(F("Controlling..."));
+}
+
+bool Controller::txStates() {
+  int size = _creature.GLOBALS.NUM_CREATURES + 1;
+
+  bool res = _creature.tx(5, 0xFF, size, _creature.getCreatureStates());
+}
+
+bool Controller::txGlobals() {
+  int size = sizeof(_creature.GLOBALS);
+
+  bool res = _creature.tx(0, 0xFF, size, (uint8_t*)&_creature.GLOBALS);
 }
 
 const uint8_t* Controller::getLocalWeights() {
