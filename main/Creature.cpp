@@ -114,29 +114,39 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
     Serial.print(F("Received SetGlobals payload of length "));
     Serial.print(len);
     Serial.print(F(" when sizeof(Globals) = "));
-    Serial.print(sizeof(Globals));
+    Serial.print(sizeof(struct Globals));
     Serial.println(F(" was expected"));
     return false;
   }
 
-  uint8_t numCreatures = GLOBALS.NUM_CREATURES;
-
-  GLOBALS = *(struct Globals *) payload;
+  struct Globals old = GLOBALS;
+  memcpy(&GLOBALS, payload, sizeof(struct Globals));
 
   dprintln(F("Setting globals:"));
-  dprint(F("\tTX_POWER")); dprintln(GLOBALS.TX_POWER);
-  dprint(F("\tSTARTLE_RAND_MIN")); dprintln(GLOBALS.STARTLE_RAND_MIN);
-  dprint(F("\tSTARTLE_RAND_MAX")); dprintln(GLOBALS.STARTLE_RAND_MAX);
-  dprint(F("\tSTARTLE_MAX")); dprintln(GLOBALS.STARTLE_MAX);
-  dprint(F("\tSTARTLE_THRESHOLD")); dprintln(GLOBALS.STARTLE_THRESHOLD);
-  dprint(F("\tSTARTLE_THRESHOLD_DECAY")); dprintln(GLOBALS.STARTLE_THRESHOLD_DECAY);
-  dprint(F("\tSTARTLE_DECAY")); dprintln(GLOBALS.STARTLE_DECAY);
-  dprint(F("\tNUM_CREATURES")); dprintln(GLOBALS.NUM_CREATURES);
-  dprint(F("\tCYCLE_TIME")); dprintln(GLOBALS.CYCLE_TIME);
+  if (old.TX_POWER != GLOBALS.TX_POWER) {
+    dprint(F("\tTX_POWER: ")); dprintln(GLOBALS.TX_POWER);
+  } if (old.STARTLE_RAND_MIN != GLOBALS.STARTLE_RAND_MIN) {
+    dprint(F("\tSTARTLE_RAND_MIN: ")); dprintln(GLOBALS.STARTLE_RAND_MIN);
+  } if (old.STARTLE_RAND_MAX != GLOBALS.STARTLE_RAND_MAX) {
+    dprint(F("\tSTARTLE_RAND_MAX: ")); dprintln(GLOBALS.STARTLE_RAND_MAX);
+  } if (old.STARTLE_MAX != GLOBALS.STARTLE_MAX) {
+    dprint(F("\tSTARTLE_MAX: ")); dprintln(GLOBALS.STARTLE_MAX);
+  } if (old.STARTLE_THRESHOLD != GLOBALS.STARTLE_THRESHOLD) {
+    dprint(F("\tSTARTLE_THRESHOLD: ")); dprintln(GLOBALS.STARTLE_THRESHOLD);
+  } if (old.STARTLE_THRESHOLD_DECAY != GLOBALS.STARTLE_THRESHOLD_DECAY) {
+    dprint(F("\tSTARTLE_THRESHOLD_DECAY: ")); dprintln(GLOBALS.STARTLE_THRESHOLD_DECAY);
+  } if (old.STARTLE_DECAY != GLOBALS.STARTLE_DECAY) {
+    dprint(F("\tSTARTLE_DECAY: ")); dprintln(GLOBALS.STARTLE_DECAY);
+  } if (old.NUM_CREATURES != GLOBALS.NUM_CREATURES) {
+    dprint(F("\tNUM_CREATURES: ")); dprintln(GLOBALS.NUM_CREATURES);
+  } if (old.CYCLE_TIME != GLOBALS.CYCLE_TIME) {
+    dprint(F("\tCYCLE_TIME: ")); dprintln(GLOBALS.CYCLE_TIME);
+  }
 
-  if (numCreatures != GLOBALS.NUM_CREATURES) {
+
+  if (old.NUM_CREATURES != GLOBALS.NUM_CREATURES) {
     dprint(F("Resizing creature arrays from "));
-    dprint(numCreatures);
+    dprint(old.NUM_CREATURES);
     dprint(F(" to "));
     dprintln(GLOBALS.NUM_CREATURES);
 
