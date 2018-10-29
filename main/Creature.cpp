@@ -41,7 +41,7 @@ Creature::Creature() {
 }
 
 void Creature::loop() {
-  uint32_t thisLoop = millis();
+  unsigned long thisLoop = millis();
   uint32_t dt = thisLoop - _lastLoop;
 
   _pollRadio();
@@ -150,8 +150,8 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
     dprint(F(" to "));
     dprintln(GLOBALS.NUM_CREATURES);
 
-    delete _creatureStates;
-    delete _creatureDistances;
+    delete[] _creatureStates;
+    delete[] _creatureDistances;
 
     // Parens zero initialize.
     _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
@@ -365,6 +365,6 @@ void Creature::setup() {
 }
 
 Creature::~Creature() {
-  delete _creatureDistances;
-  delete _creatureStates;
+  delete[] _creatureDistances;
+  delete[] _creatureStates;
 }
