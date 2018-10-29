@@ -169,9 +169,6 @@ void Creature::_processCommand() {
           Serial.println();
         }
       }
-    } else if (str.equals("broadcast")) {
-      Serial.print("Broadcasting globals");
-      // TODO: Sent broadcast packet
     } else if (str.equals("packet")) {
       if (Serial.available()) {
         uint8_t dst = (uint8_t) Serial.parseInt();
@@ -201,8 +198,64 @@ void Creature::_processCommand() {
         Serial.println(_creatureTimes[i] ? "ms" : "");
       }
       Serial.println();
+    } else if (str.equals("globals")) {
+
+      Serial.print("TX_POWER                    ==   ");
+      Serial.println(GLOBALS.TX_POWER);
+
+      Serial.print("STARTLE_RAND_MIN            ==   ");
+      Serial.println(GLOBALS.STARTLE_RAND_MIN);
+
+      Serial.print("STARTLE_RAND_MAX            ==   ");
+      Serial.println(GLOBALS.STARTLE_RAND_MAX);
+
+      Serial.print("STARTLE_MAX                 ==   ");
+      Serial.println(GLOBALS.STARTLE_MAX);
+
+      Serial.print("STARTLE_THRESHOLD           ==   ");
+      Serial.println(GLOBALS.STARTLE_THRESHOLD);
+
+      Serial.print("STARTLE_DECAY               ==   ");
+      Serial.println(GLOBALS.STARTLE_DECAY);
+
+      Serial.print("NUM_CREATURES               ==   ");
+      Serial.println(GLOBALS.NUM_CREATURES);
+
+      Serial.print("STARTLE_THRESHOLD_DECAY     ==   ");
+      Serial.println(GLOBALS.STARTLE_THRESHOLD_DECAY);
+
+      Serial.print("CYCLE_TIME                  ==   ");
+      Serial.println(GLOBALS.CYCLE_TIME);
+
+      Serial.println();
+
     } else if (str.equals("help")) {
-        
+
+      Serial.println("globals");
+      Serial.println("   Prints the current global values\n");
+
+      Serial.println("states");
+      Serial.println("   Prints the current creature states & time since last transmission\n");
+      
+      Serial.println("stop <creature number>");
+      Serial.println("   Stops the given creature\n");
+
+      Serial.println("start <creature number> <mode>");
+      Serial.println("   Starts the given creature into the given mode (0x0000 for random, 0x8XXX for continue)\n");
+
+      Serial.println("sound <creature number> <sound number>");
+      Serial.println("   Commands the given creature to play the specified sound\n");
+
+      Serial.println("effect <creature number> <effect number>");
+      Serial.println("   Commands the given creature to play the specified effect\n");
+
+      Serial.println("set <global index> <value>");
+      Serial.println("\tSets the specified global to the given value\n");
+
+      Serial.println("packet <byte> ... <byte>");
+      Serial.println("\tSends a given packet\n");
+
+      Serial.println();
     } else {
       Serial.println("ERROR: INVALID COMMAND");
       Serial.println(str);
