@@ -341,6 +341,9 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
   memcpy(_buf + 3, payload, len);
 
   Serial.print(F("Sending pid 0x"));
+  if (pid < 16) {
+    dprint('0');
+  }
   Serial.print(pid, HEX);
   Serial.print(F(" with "));
   Serial.print(len);
@@ -350,6 +353,9 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
   Serial.println(_addr);
 
   for (uint8_t* i = &_buf[3]; i < &_buf[len + 3]; i++) {
+    if (*i < 16) {
+      dprint('0');
+    }
     dprint(*i, HEX);
     dprint(' ');
   }
@@ -395,6 +401,9 @@ void Creature::_pollRadio() {
     dstAddr = _buf[2];
 
     Serial.print(F("Received pid 0x"));
+    if (pid < 16) {
+      dprint('0');
+    }
     Serial.print(pid, HEX);
     Serial.print(F(" with "));
     Serial.print(len - 3);
@@ -404,6 +413,9 @@ void Creature::_pollRadio() {
     Serial.println(dstAddr);
 
     for (uint8_t* i = &_buf[3]; i < &_buf[len]; i++) {
+      if (*i < 16) {
+        dprint('0');
+      }
       dprint(*i, HEX);
       dprint(' ');
     }

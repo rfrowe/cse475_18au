@@ -16,13 +16,6 @@ uint8_t Controller::getId() {
 }
 
 void Controller::loop(uint32_t dt) {
-  uint8_t * states = _creature.getCreatureStates();
-  for (int i = 0; i < _creature.GLOBALS.NUM_CREATURES + 1; i++) {
-    Serial.print(i == 0 ? "" : ", ");
-    Serial.print(states[i]);
-  }
-  Serial.println();
-
   txGlobals();
   txStates();
 }
