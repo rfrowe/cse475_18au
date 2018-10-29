@@ -26,7 +26,7 @@ Creature::Creature() {
   // Parens zero initialize
   _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
   _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES + 1]();
-
+  _creatureTimes = new unsigned long[GLOBALS.NUM_CREATURES + 1]();
   
   _battery = getBatteryVoltage();
 
@@ -131,7 +131,6 @@ void Creature::_processCommand() {
             Serial.print(globalIndex);
             Serial.print(" == ");
             Serial.println(GLOBALS_NAMES[globalIndex]);
-            
           } else {
             Serial.print("Adjusting global ");
             Serial.print(GLOBALS_NAMES[globalIndex]);
@@ -150,15 +149,16 @@ void Creature::_processCommand() {
               uint16_t val = (uint16_t) Serial.parseInt();
               *(uint16_t*) ptr = val;
               Serial.println(*(uint16_t*) ptr);
-            } else {
+            }else {
               Serial.print(*(uint8_t*) ptr);
               Serial.print(" to ");
               uint8_t val = (uint8_t) Serial.parseInt();
+              if (globalIndex == 6) {
+                _updateGlobals(*(uint8_t*) ptr, val);
+              }
               *(uint8_t*) ptr = val;
               Serial.println(*(uint8_t*) ptr);
             }
-
-            // TODO: BROADCAST CHANGES
           }
           Serial.println();
         } else {
@@ -180,14 +180,29 @@ void Creature::_processCommand() {
         uint8_t pid = _get_int();
         
         uint8_t pld[RH_RF69_MAX_MESSAGE_LEN];
-        uint8_t size = 0;
-        while (Serial.available() && size < RH_RF69_MAX_MESSAGE_LEN) {
-          pld[size] = _get_int();
-          size++;
+        uint8_t sz = 0;
+        while (Serial.available() && sz < RH_RF69_MAX_MESSAGE_LEN) {
+          pld[sz] = _get_int();
+          sz++;
         }
 
-        bool res = tx(pid, dst, size, pld);
+        bool res = tx(pid, dst, sz, pld);
       }
+    } else if (str.equals("states")) {
+      unsigned long now = millis();
+      for (int i = 1; i < GLOBALS.NUM_CREATURES + 1; i++) {
+        Serial.print("Creature ");
+        Serial.print(i);
+        Serial.print("\tState ");
+        _creatureTimes[i] ? Serial.print("0x") : Serial.print("");
+        _creatureTimes[i] ? Serial.print(_creatureStates[i], HEX) : Serial.print("N/A");
+        Serial.print("\tLast Contact: ");
+        _creatureTimes[i] ? Serial.print(now - _creatureTimes[i]) : Serial.print("N/A");
+        Serial.println(_creatureTimes[i] ? "ms" : "");
+      }
+      Serial.println();
+    } else if (str.equals("help")) {
+        
     } else {
       Serial.println("ERROR: INVALID COMMAND");
       Serial.println(str);
@@ -196,16 +211,51 @@ void Creature::_processCommand() {
   }
 }
 
+void Creature::_updateGlobals(uint8_t sizeOld, uint8_t sizeNew) {
+  int8_t* newDistances = new int8_t[sizeNew + 1]();
+  uint8_t* newStates = new uint8_t[sizeNew + 1]();
+  unsigned long* newTimes = new unsigned long[sizeNew + 1]();
+
+  int overlap = sizeOld > sizeNew ? sizeNew : sizeOld;
+  for (int i = 0; i < overlap; i++) {
+    newDistances[i] = _creatureDistances[i];
+    newStates[i] = _creatureStates[i];
+    newTimes[i] = _creatureTimes[i];
+  }
+
+  delete[] _creatureDistances;
+  delete[] _creatureStates;
+  delete[] _creatureTimes;
+
+  _creatureDistances = newDistances;
+  _creatureStates = newStates;
+  _creatureTimes = newTimes;
+}
+
+
+void Creature::_updateCreature(uint8_t id) {
+  if (id < GLOBALS.NUM_CREATURES) {
+    _creatureTimes[id] = millis();
+  }
+}
+
 void Creature::loop() {
-  uint32_t thisLoop = millis();
-  uint32_t dt = thisLoop - _lastLoop;
+  unsigned long thisLoop = millis();
+  unsigned long dt = thisLoop - _lastLoop;
 
   _pollRadio();
-
   _processCommand();
 
   // Only trigger state loops and transitions every CYCLE_TIME ms
-  if (dt > GLOBALS.CYCLE_TIME) {
+  if (dt > CONT_CYCLE_TIME) {
+
+    for (int i = 1; i < GLOBALS.NUM_CREATURES + 1; i++) {
+      if (thisLoop - _creatureTimes[i] > 60000) {
+        _creatureTimes[i] = 0;
+        _creatureStates[i] = 0;
+      }
+    }
+    
     _updateDisplay();
 
     if (_next != NULL) {
@@ -229,6 +279,8 @@ void Creature::loop() {
 bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, int8_t rssi) {
   _rxCount++;
   _updateDistance(srcAddr, rssi);
+
+  _updateCreature(srcAddr);
 
   switch (pid) {
     case PID_SET_GLOBALS:
@@ -255,20 +307,21 @@ bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, 
   }
 }
 
-void Creature::_updateDistance(uint8_t addr, int8_t rssi) {}
+void Creature::_updateDistance(uint8_t addr, int8_t rssi) {
+}
 
 bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
   return true;
 }
 
-void Creature::_rxStop() {}
+void Creature::_rxStop() {
+}
 
 bool Creature::_rxStart(uint8_t len, uint8_t* payload) {
   return true;
 }
 
 bool Creature::_rxBroadcastStates(uint8_t len, uint8_t* payload) {
-  // TODO: implement
   return true;
 }
 
@@ -320,7 +373,9 @@ void Creature::_txSendState(uint8_t oldState, uint8_t newState) {
 }
 
 void Creature::_receiveState(uint8_t src, uint8_t st) {
-  _creatureStates[src] = st;
+  if (src < GLOBALS.NUM_CREATURES) {
+    _creatureStates[src] = st;
+  }
 }
 
 void Creature::_pollRadio() {
@@ -449,15 +504,13 @@ void Creature::setup() {
                    0xf7, 0xf2, 0x18, 0xc3, 0x5c, 0xce, 0x96, 0x65};
   _rf69.setEncryptionKey(key);
 
-  _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES + 1]();
-
   Serial.print(F("RFM69 radio @ "));
   Serial.print(RFM69_FREQ);
   Serial.println(F("MHz"));
-  _creatureStates[25] = 10;
 }
 
 Creature::~Creature() {
-  delete _creatureDistances;
-  delete _creatureStates;
+  delete[] _creatureDistances;
+  delete[] _creatureStates;
+  delete[] _creatureTimes;
 }

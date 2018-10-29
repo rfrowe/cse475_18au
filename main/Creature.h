@@ -37,6 +37,9 @@ class State;
 #define PID_STARTLE 0x6
 #define PID_SEND_STATE 0x7
 
+#define CONT_CYCLE_TIME 5000
+#define CLEAR_TIME 60000
+
 static const uint8_t GLOBALS_LEN = 9;
 struct Globals {
   uint16_t TX_POWER;
@@ -139,7 +142,11 @@ class Creature {
   void _processCommand();
 
   int _get_int();
- 
+  
+  void _updateGlobals(uint8_t sizeOld, uint8_t sizeNew);
+
+  void _updateCreature(uint8_t id);
+
   /**
    * Called during loop to poll radio for new received packets. Calls Creature::rx with any
    * received packets that were intended for this creature.
@@ -230,6 +237,9 @@ class Creature {
 
   /** State ids for all creatures 0 through NUM_CREATURES. Should be of size GLOBALS.NUM_CREATURES + 1 */
   uint8_t *_creatureStates;
+
+  /** Time of last communication with creature. 0 iff the creature is disconnected from the network (i.e. time since > CLEAR_TIME)*/
+  unsigned long *_creatureTimes;
 
   /** Running average of pseudodistance (RSSI) for all creatures 0 through NUM_CREATURES. Should be of size GLOBALS.NUM_CREATURES + 1 */
   int8_t *_creatureDistances;
