@@ -30,6 +30,8 @@ float Wait::getStartleFactor() {
 
 bool Wait::rxStartle(uint8_t len, uint8_t* payload) {}
 
-void Wait::PIR() {}
+void Wait::PIR() {
+  dprintln("PIR triggered!");
+}
 
 void Wait::startled() {}

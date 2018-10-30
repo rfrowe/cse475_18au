@@ -68,6 +68,11 @@ class State {
    * Values over one make this state harder to startle, values under one make it easier.
    */
   virtual float getStartleFactor() = 0;
+
+  /**
+   * Called when PIR pin goes from LOW to HIGH.
+   */
+  virtual void PIR() = 0;
  protected:
   // Packet transmitters
   /**
@@ -101,11 +106,6 @@ class State {
   virtual bool rxStartle(uint8_t len, uint8_t* payload) = 0;
 
   // Event handlers
-  /**
-   * Called when PIR pin goes from LOW to HIGH.
-   */
-  virtual void PIR() = 0;
-
   /**
    * Called when this creature is successfully startled. Should set the _creature's
    * _next state to the startle state.

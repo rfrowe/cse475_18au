@@ -15,6 +15,7 @@ class State;
 #define VREF 3.3
 
 #define ID_PIN A0
+#define PIR_PIN A1
 #define VBAT_PIN A7
 #define LED_PIN 13
 
@@ -233,7 +234,11 @@ class Creature {
 
   uint8_t _txCount, _rxCount;
 
+  /** Current battery voltage. */
   float _battery;
+
+  /** Last known state of the PIR sensor. Used for duplicate detection. */
+  bool _PIR;
 };
 
 #endif  // _CREATURE_H_

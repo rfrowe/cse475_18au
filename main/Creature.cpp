@@ -66,6 +66,17 @@ void Creature::loop() {
 
     _lastLoop = thisLoop;
   }
+
+  // Poll PIR
+  bool newPIR = digitalRead(PIR_PIN);
+  if (newPIR && !_PIR) {
+    // Rising edge trigger
+    _state->PIR();
+    _PIR = newPIR;
+  } else if (!newPIR && _PIR) {
+    // Falling edge
+    _PIR = newPIR;
+  }
 }
 
 bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, int8_t rssi) {
@@ -275,7 +286,6 @@ void Creature::_pollRadio() {
     }
 
     Serial.println();
-    Serial.println();
 
     if (dstAddr == _addr || dstAddr == BROADCAST_ADDR) {
       if (!_rx(pid, srcAddr, len - 3, &_buf[3], _rf69.lastRssi())) {
@@ -374,6 +384,9 @@ void Creature::setup() {
   VS1053_MIDI.begin(31250);
   Midi::tcConfigure(1000);  // Hz
   Midi::tcStartCounter();
+
+  pinMode(PIR_PIN, INPUT);
+  _PIR = digitalRead(PIR_PIN);
 }
 
 Creature::~Creature() {
