@@ -25,7 +25,7 @@
 #define MIDI_CHAN_PROGRAM 0xC0
 
 #define CPU_HZ 48000000
-#define TIMER_PRESCALER_DIV 1024
+#define TIMER_PRESCALER_DIV 1000
 
 typedef struct SoundGesture {
   const uint8_t bank;

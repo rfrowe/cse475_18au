@@ -115,16 +115,20 @@ void Midi::tcStartCounter() {
 
 void Midi::setCurrent(SoundGesture* gesture) {
   noInterrupts();
-  if (Midi::current != nullptr && noteFlag) {
-    midiNoteOff(0, Midi::current->notes[noteIdx], Midi::current->volume);
+
+  if (Midi::current != gesture) {
+    if (Midi::current != nullptr && noteFlag) {
+      midiNoteOff(0, Midi::current->notes[noteIdx], Midi::current->volume);
+    }
+
+    Midi::current = gesture;
+
+    if (gesture == nullptr) {
+      noteFlag = false;
+      gestFlag = false;
+    }
   }
 
-  Midi::current = gesture;
-
-  if (gesture == nullptr) {
-    noteFlag = false;
-    gestFlag = false;
-  }
   interrupts();
 }
 
