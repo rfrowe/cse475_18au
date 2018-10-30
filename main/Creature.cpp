@@ -75,12 +75,15 @@ bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, 
   // TODO: implement to call appropriate state functions.
   switch (pid) {
     case PID_SET_GLOBALS:
+      if (srcAddr != CONTROLLER_ADDR) return false;
       _rxSetGlobals(len, payload);
       return true;
     case PID_STOP:
+      if (srcAddr != CONTROLLER_ADDR) return false;
       _rxStop();
       return true;
     case PID_START:
+      if (srcAddr != CONTROLLER_ADDR) return false;
       _rxStart(len, payload);
       return true;
     case PID_PLAY_SOUND:
@@ -93,9 +96,6 @@ bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, 
       // TODO: Implement
       return true;
     case PID_STARTLE:
-      // TODO: Implement
-      return true;
-    case PID_SEND_STATE:
       // TODO: Implement
       return true;
     default:
@@ -162,7 +162,7 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
 }
 
 void Creature::_rxStop() {
-  // TODO: implement
+  setNextState(new Wait(*this));
 }
 
 bool Creature::_rxStart(uint8_t len, uint8_t* payload) {
