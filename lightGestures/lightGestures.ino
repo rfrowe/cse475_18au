@@ -14,7 +14,7 @@
 // On Metro M4: 3, 6, 8, 11, A3 and MOSI
 #define PIN         A5
 #define NUM_PIXELS 16
-#define GESTURE 5 // 0: startle gesture, 1 2 3: ambient gestures,4 5 6: active gestures
+#define GESTURE 3 // 0: startle gesture, 1 2 3: ambient gestures,4 5 6: active gestures
 /****CHANGE THE GESTURE NUMBER TO TEST OUT EACH GESTURE****/
 
 Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
@@ -104,16 +104,7 @@ void ambient2(void) {
       strip.setPixelColor(i, Wheel((uint8_t)(
         (elapsed * 256 / 1000000) + i * 256 / strip.numPixels())));
     }
-    for (int j = 8; j < 33; j++) {
-        strip.setBrightness(j);
-        strip.show();
-        delay(50);
-      }
-      for (int k = 32; k >= 8; k--) {
-        strip.setBrightness(k);
-        strip.show();
-        delay(50);
-      }
+    bounceBrightness(8,33,50);
   }
 }
 
@@ -125,20 +116,34 @@ void ambient3(void) {
     t       = micros();
     elapsed = t - startTime;
     if(elapsed > 5000000) break; // Run for 5 seconds
-    for(i=0; i<strip.numPixels(); i++) {
+    for(i=0; i<strip.numPixels() / 2; i++) {
       strip.setPixelColor(i, Wheel((uint8_t)(
         (elapsed * 256 / 1000000) + i * 256 / strip.numPixels())));
-    }
-    for (int j = 8; j < 33; j++) {
-        strip.setBrightness(j);
-        strip.show();
-        delay(50);
-      }
-      for (int k = 32; k >= 8; k--) {
-        strip.setBrightness(k);
-        strip.show();
-        delay(50);
-      }
+      bounceBrightness(0,33,50);
+      strip.setPixelColor(i + strip.numPixels() / 2, Wheel((uint8_t)(
+        (elapsed * 256 / 1000000) + i * 256 / strip.numPixels())));
+      bounceBrightness(0,33, 50);
+      strip.setBrightness(0);
+      strip.show();
+   }
+   for(i=0; i<strip.numPixels(); i++) {
+     strip.setPixelColor(i, 0);
+   }
+   strip.setBrightness(0);
+   strip.show();
+ }
+}
+
+void bounceBrightness(int low, int high, int delTime) {
+  for (int j = low; j < high; j++) {
+    strip.setBrightness(j);
+    strip.show();
+    delay(delTime);
+  }
+  for (int k = high - 1; k >= low; k--) {
+    strip.setBrightness(k);
+    strip.show();
+    delay(delTime);
   }
 }
 
