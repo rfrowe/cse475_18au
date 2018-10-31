@@ -1,6 +1,6 @@
 /*
  * Light gestures for startle, ambient, and active states.
- * Author: Akhil Avula
+ * Author: Akhil Avula, Kheng Wei
  * EE 475 Autumn 2018
  */
 #include <Adafruit_NeoPixel_ZeroDMA.h>
