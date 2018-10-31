@@ -1,7 +1,7 @@
 
 // Solder closed jumper on bottom!
 #include <SPI.h>
-
+#include <Adafruit_FeatherOLED.h>
 #define CPU_HZ 48000000
 #define TIMER_PRESCALER_DIV 1000
 int sampleRate = 1000; //sample rate of the square wave in Hertz, how many times per second the TC5_Handler() function gets called per second basically
@@ -42,6 +42,8 @@ uint16_t velocity = 50;
 
 #define VS1053_MIDI Serial1
 
+Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
+
 uint8_t voice[] = {
     7,9,10,12,15,47,105,99,113,114,115,116,118,124 };
 
@@ -55,6 +57,14 @@ void setup() {
   
   Serial.begin(115200);
   delay(100);
+
+  oled.begin(); //Initialize the oled display
+  oled.display();
+  oled.clearDisplay();
+  oled.init();
+  oled.setCursor(0,0);
+  oled.print("hello.");
+  oled.display();
 
   VS1053_MIDI.begin(31250); // MIDI uses a 'strange baud rate' 
   midiSetChannelBank(0, VS1053_BANK_MELODY);
