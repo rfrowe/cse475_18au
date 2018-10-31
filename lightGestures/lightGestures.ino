@@ -13,7 +13,8 @@
 // On Metro M4: 3, 6, 8, 11, A3 and MOSI
 #define PIN         A5
 #define NUM_PIXELS 16
-#define GESTURE 1 // 0: startle gesture, 1 2 3: ambient gestures,4 5 6: active gestures
+#define GESTURE 4 // 0: startle gesture, 1 2 3: ambient gestures,4 5 6: active gestures
+/****CHANGE THE GESTURE NUMBER TO TEST OUT EACH GESTURE****/
 
 Adafruit_NeoPixel_ZeroDMA strip(NUM_PIXELS, PIN, NEO_GRBW);
 
@@ -24,9 +25,10 @@ void setup() {
 }
 
 void loop() {
+  uint16_t i;
+  uint32_t temp;
   if (0 == GESTURE) {
-    uint16_t i;
-    uint32_t temp;
+    
     // 'Color wipe' across all pixels
     for(uint32_t c = 0xFF0000; c; c >>= 16) { // Red, blue
       for(i=0; i<strip.numPixels(); i++) {
@@ -42,24 +44,57 @@ void loop() {
     }
     
   } else if (1 == GESTURE) { // ambient
-    uint16_t i;
-    uint32_t temp;
+//    uint16_t i;
+//    uint32_t temp;
     // 'Color wipe' across all pixels
-    for(uint32_t c = 0xFF0000 >> 16; c; c) {
-      for (int j = 0; j < 33; j++) {
-        strip.setBrightness(j);
-      }
+    for(uint32_t c = 0xFF0000; c; c >>=8) {
       for(i=0; i<strip.numPixels(); i++) {
         strip.setPixelColor(i, c);
       }
-      strip.show();
-//      delay(500);
+      for (int j = 0; j < 33; j++) {
+        strip.setBrightness(j);
+        strip.show();
+        delay(50);
+      }
+      for (int k = 32; k >= 0; k--) {
+        strip.setBrightness(k);
+        strip.show();
+        delay(50);
+      }
+      
     }
   } else if (2 == GESTURE) { // ambient
-    
+    uint32_t elapsed, t, startTime = micros();
+    for(;;) {
+    t       = micros();
+    elapsed = t - startTime;
+    if(elapsed > 5000000) break; // Run for 5 seconds
+    for(i=0; i<strip.numPixels(); i++) {
+      strip.setPixelColor(i, Wheel((uint8_t)(
+        (elapsed * 256 / 1000000) + i * 256 / strip.numPixels())));
+    }
+    for (int j = 8; j < 33; j++) {
+        strip.setBrightness(j);
+        strip.show();
+        delay(50);
+      }
+      for (int k = 32; k >= 8; k--) {
+        strip.setBrightness(k);
+        strip.show();
+        delay(50);
+      }
+  }
   } else if (3 == GESTURE) { // ambient
     
   } else if (4 == GESTURE) { // active
+    for(uint32_t c = 0xFF0000; c; c >>= 8) { // Red, green, blue
+      for(i=0; i<strip.numPixels()/2; i++) {
+        strip.setPixelColor(i, c);
+        strip.setPixelColor(i + strip.numPixels()/2, c >> 8);
+        strip.show();
+        delay(50);
+      }
+    }
 
   } else if (5 == GESTURE) { // active
     
