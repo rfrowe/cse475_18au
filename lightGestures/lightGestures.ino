@@ -97,7 +97,14 @@ void loop() {
     }
 
   } else if (5 == GESTURE) { // active
-    
+    for(uint32_t c = 0xFF0000; c; c >>= 8) { // Red, green, blue
+      for(i=0; i<strip.numPixels()/2; i++) {
+        strip.setPixelColor(i, c);
+        strip.setPixelColor(strip.numPixels() - i, c >> 8);
+        strip.show();
+        delay(50);
+      }
+    }
   } else if (6 == GESTURE) { // active
     
   }
