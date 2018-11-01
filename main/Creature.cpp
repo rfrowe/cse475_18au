@@ -2,11 +2,18 @@
 #include "Debug.h"
 #include "State.h"
 #include "Wait.h"
+#include "Midi.h"
 
 #include <cmath>
 
 // TODO: put your kit number here
 #define KIT_NUM 0
+
+// Returns current battery voltage
+inline float getBatteryVoltage() {
+  // Update battery field with a little weighting to stop rapid changes.
+  return analogRead(VBAT_PIN)  * 2 * VREF / 1024;
+}
 
 Creature::Creature() {
   // Initialize _next to be the Wait state, so we will immediately transition into it on the first loop.
@@ -27,12 +34,14 @@ Creature::Creature() {
   _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
   _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES + 1]();
 
+  _battery = getBatteryVoltage();
+
   _lastStartle = millis();
   _lastLoop = millis();
 }
 
 void Creature::loop() {
-  uint32_t thisLoop = millis();
+  unsigned long thisLoop = millis();
   uint32_t dt = thisLoop - _lastLoop;
 
   _pollRadio();
@@ -57,20 +66,35 @@ void Creature::loop() {
 
     _lastLoop = thisLoop;
   }
+
+  // Poll PIR
+  bool newPIR = digitalRead(PIR_PIN);
+  if (newPIR && !_PIR) {
+    // Rising edge trigger
+    _state->PIR();
+    _PIR = newPIR;
+  } else if (!newPIR && _PIR) {
+    // Falling edge
+    _PIR = newPIR;
+  }
 }
 
 bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, int8_t rssi) {
+  _rxCount++;
   _updateDistance(srcAddr, rssi);
 
   // TODO: implement to call appropriate state functions.
   switch (pid) {
     case PID_SET_GLOBALS:
+      if (srcAddr != CONTROLLER_ADDR) return false;
       _rxSetGlobals(len, payload);
       return true;
     case PID_STOP:
+      if (srcAddr != CONTROLLER_ADDR) return false;
       _rxStop();
       return true;
     case PID_START:
+      if (srcAddr != CONTROLLER_ADDR) return false;
       _rxStart(len, payload);
       return true;
     case PID_PLAY_SOUND:
@@ -83,9 +107,6 @@ bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, 
       // TODO: Implement
       return true;
     case PID_STARTLE:
-      // TODO: Implement
-      return true;
-    case PID_SEND_STATE:
       // TODO: Implement
       return true;
     default:
@@ -104,34 +125,44 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
     Serial.print(F("Received SetGlobals payload of length "));
     Serial.print(len);
     Serial.print(F(" when sizeof(Globals) = "));
-    Serial.print(sizeof(Globals));
+    Serial.print(sizeof(struct Globals));
     Serial.println(F(" was expected"));
     return false;
   }
 
-  uint8_t numCreatures = GLOBALS.NUM_CREATURES;
-
-  GLOBALS = *(struct Globals *) payload;
+  struct Globals old = GLOBALS;
+  memcpy(&GLOBALS, payload, sizeof(struct Globals));
 
   dprintln(F("Setting globals:"));
-  dprint(F("\tTX_POWER")); dprintln(GLOBALS.TX_POWER);
-  dprint(F("\tSTARTLE_RAND_MIN")); dprintln(GLOBALS.STARTLE_RAND_MIN);
-  dprint(F("\tSTARTLE_RAND_MAX")); dprintln(GLOBALS.STARTLE_RAND_MAX);
-  dprint(F("\tSTARTLE_MAX")); dprintln(GLOBALS.STARTLE_MAX);
-  dprint(F("\tSTARTLE_THRESHOLD")); dprintln(GLOBALS.STARTLE_THRESHOLD);
-  dprint(F("\tSTARTLE_THRESHOLD_DECAY")); dprintln(GLOBALS.STARTLE_THRESHOLD_DECAY);
-  dprint(F("\tSTARTLE_DECAY")); dprintln(GLOBALS.STARTLE_DECAY);
-  dprint(F("\tNUM_CREATURES")); dprintln(GLOBALS.NUM_CREATURES);
-  dprint(F("\tCYCLE_TIME")); dprintln(GLOBALS.CYCLE_TIME);
+  if (old.TX_POWER != GLOBALS.TX_POWER) {
+    dprint(F("\tTX_POWER: ")); dprintln(GLOBALS.TX_POWER);
+  } if (old.STARTLE_RAND_MIN != GLOBALS.STARTLE_RAND_MIN) {
+    dprint(F("\tSTARTLE_RAND_MIN: ")); dprintln(GLOBALS.STARTLE_RAND_MIN);
+  } if (old.STARTLE_RAND_MAX != GLOBALS.STARTLE_RAND_MAX) {
+    dprint(F("\tSTARTLE_RAND_MAX: ")); dprintln(GLOBALS.STARTLE_RAND_MAX);
+  } if (old.STARTLE_MAX != GLOBALS.STARTLE_MAX) {
+    dprint(F("\tSTARTLE_MAX: ")); dprintln(GLOBALS.STARTLE_MAX);
+  } if (old.STARTLE_THRESHOLD != GLOBALS.STARTLE_THRESHOLD) {
+    dprint(F("\tSTARTLE_THRESHOLD: ")); dprintln(GLOBALS.STARTLE_THRESHOLD);
+  } if (old.STARTLE_THRESHOLD_DECAY != GLOBALS.STARTLE_THRESHOLD_DECAY) {
+    dprint(F("\tSTARTLE_THRESHOLD_DECAY: ")); dprintln(GLOBALS.STARTLE_THRESHOLD_DECAY);
+  } if (old.STARTLE_DECAY != GLOBALS.STARTLE_DECAY) {
+    dprint(F("\tSTARTLE_DECAY: ")); dprintln(GLOBALS.STARTLE_DECAY);
+  } if (old.NUM_CREATURES != GLOBALS.NUM_CREATURES) {
+    dprint(F("\tNUM_CREATURES: ")); dprintln(GLOBALS.NUM_CREATURES);
+  } if (old.CYCLE_TIME != GLOBALS.CYCLE_TIME) {
+    dprint(F("\tCYCLE_TIME: ")); dprintln(GLOBALS.CYCLE_TIME);
+  }
 
-  if (numCreatures != GLOBALS.NUM_CREATURES) {
+
+  if (old.NUM_CREATURES != GLOBALS.NUM_CREATURES) {
     dprint(F("Resizing creature arrays from "));
-    dprint(numCreatures);
+    dprint(old.NUM_CREATURES);
     dprint(F(" to "));
     dprintln(GLOBALS.NUM_CREATURES);
 
-    delete _creatureStates;
-    delete _creatureDistances;
+    delete[] _creatureStates;
+    delete[] _creatureDistances;
 
     // Parens zero initialize.
     _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
@@ -142,7 +173,7 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
 }
 
 void Creature::_rxStop() {
-  // TODO: implement
+  setNextState(new Wait(*this));
 }
 
 bool Creature::_rxStart(uint8_t len, uint8_t* payload) {
@@ -177,6 +208,9 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
   memcpy(_buf + 3, payload, len);
 
   Serial.print(F("Sending pid 0x"));
+  if (pid < 16) {
+    dprint('0');
+  }
   Serial.print(pid, HEX);
   Serial.print(F(" with "));
   Serial.print(len);
@@ -186,6 +220,9 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
   Serial.println(_addr);
 
   for (uint8_t* i = &_buf[3]; i < &_buf[len + 3]; i++) {
+    if (*i < 16) {
+      dprint('0');
+    }
     dprint(*i, HEX);
     dprint(' ');
   }
@@ -199,6 +236,7 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
 
   _rf69.send((const uint8_t*) &_buf, len + 3);
   _rf69.waitPacketSent();
+  _txCount++;
   return true;
 }
 
@@ -224,6 +262,9 @@ void Creature::_pollRadio() {
     dstAddr = _buf[2];
 
     Serial.print(F("Received pid 0x"));
+    if (pid < 16) {
+      dprint('0');
+    }
     Serial.print(pid, HEX);
     Serial.print(F(" with "));
     Serial.print(len - 3);
@@ -233,6 +274,9 @@ void Creature::_pollRadio() {
     Serial.println(dstAddr);
 
     for (uint8_t* i = &_buf[3]; i < &_buf[len]; i++) {
+      if (*i < 16) {
+        dprint('0');
+      }
       dprint(*i, HEX);
       dprint(' ');
     }
@@ -241,7 +285,6 @@ void Creature::_pollRadio() {
       dprintln((char*) &_buf[3]);
     }
 
-    Serial.println();
     Serial.println();
 
     if (dstAddr == _addr || dstAddr == BROADCAST_ADDR) {
@@ -263,29 +306,35 @@ void Creature::_transition(State* const state) {
   if (state != old) {
     if (old != nullptr) {
       delete old;
-      _txSendState(old->getStateId(), state->getStateId());
+      _txSendState(old->getId(), state->getId());
     } else {
-      _txSendState(0, state->getStateId());
+      _txSendState(0, state->getId());
     }
   }
 
   _remainingRepeats = _state->getNumRepeats();
 }
 
-// Returns current battery voltage
-inline float getBatteryVoltage() {
-  return analogRead(VBAT_PIN)  * 2 * VREF / 1024;
-}
-
 void Creature::_updateDisplay() {
-  float voltage = getBatteryVoltage();
+  _battery = 0.95 * _battery + 0.05 * getBatteryVoltage();
 
   oled.clearDisplay();
-  oled.setBattery(voltage);
+  oled.setBattery(_battery);
   oled.renderBattery();
+
   oled.setCursor(0, 0);
-  oled.print("Addr: ");
-  oled.println(_addr);
+  oled.print(F("TXRX:"));
+  oled.print(_txCount);
+  oled.print(F("/"));
+  oled.println(_rxCount);
+
+  oled.setCursor(0, 9);
+  oled.print(_state ? _state->getName() : "None");
+
+  oled.setCursor((OLED_WIDTH - 3) * 6, 9);
+  oled.print("#");
+  oled.print(_addr);
+
   oled.display();
 }
 
@@ -330,9 +379,17 @@ void Creature::setup() {
   Serial.print(F("RFM69 radio @ "));
   Serial.print(RFM69_FREQ);
   Serial.println(F("MHz"));
+
+  // Setup MIDI
+  VS1053_MIDI.begin(31250);
+  Midi::tcConfigure(1000);  // Hz
+  Midi::tcStartCounter();
+
+  pinMode(PIR_PIN, INPUT);
+  _PIR = digitalRead(PIR_PIN);
 }
 
 Creature::~Creature() {
-  delete _creatureDistances;
-  delete _creatureStates;
+  delete[] _creatureDistances;
+  delete[] _creatureStates;
 }

@@ -6,11 +6,11 @@
 
 class Wait : public State {
  public:
-  Wait(Creature& creature) : State(creature) {}
+  Wait(Creature& creature) : State(creature, "Wait") {}
   uint8_t getNumRepeats();
   State* transition() override;
   void loop(uint32_t dt);
-  uint8_t getStateId();
+  uint8_t getId();
   const uint8_t* getLocalWeights();
   float getStartleFactor();
 protected:

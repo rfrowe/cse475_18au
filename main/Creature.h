@@ -8,16 +8,21 @@
 #include <RH_RF69.h>
 #include <Wire.h>
 
+#include "Midi.h"
+
 class State;
 
 #define VREF 3.3
 
 #define ID_PIN A0
+#define PIR_PIN A1
 #define VBAT_PIN A7
 #define LED_PIN 13
 
 #define NEOPIXEL_PIN 19
 #define NEOPIXEL_COUNT 16
+
+#define OLED_WIDTH 21 // chars
 
 #define RFM69_FREQ 915.0
 #define RFM69_CS 8
@@ -41,9 +46,9 @@ struct Globals {
   uint8_t STARTLE_RAND_MAX;
   uint8_t STARTLE_MAX;
   uint8_t STARTLE_THRESHOLD;
-  float STARTLE_THRESHOLD_DECAY;
   uint8_t STARTLE_DECAY;
   uint8_t NUM_CREATURES;
+  float STARTLE_THRESHOLD_DECAY;
   uint16_t CYCLE_TIME;
 };
 
@@ -57,15 +62,15 @@ class Creature {
   Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
   Adafruit_NeoPixel_ZeroDMA strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
   struct Globals GLOBALS = {
-    /* TX_POWER */                  14,
-    /* STARTLE_RAND_MIN */          100,
-    /* STARTLE_RAND_MAX */          200,
-    /* STARTLE_MAX */               255,
-    /* STARTLE_THRESHOLD */         150,
-    /* STARTLE_THRESHOLD_DECAY */   0.9,
-    /* STARTLE_DECAY */             30,
-    /* NUM_CREATURES */             30,
-    /* CYCLE_TIME */                100, // ms
+    /* TX_POWER */                  14,   // uint16_t
+    /* STARTLE_RAND_MIN */          100,  // uint8_t
+    /* STARTLE_RAND_MAX */          200,  // uint8_t
+    /* STARTLE_MAX */               255,  // uint8_t
+    /* STARTLE_THRESHOLD */         150,  // uint8_t
+    /* STARTLE_DECAY */             30,   // uint8_t
+    /* NUM_CREATURES */             30,   // uint8_t
+    /* STARTLE_THRESHOLD_DECAY */   0.9,  // float32
+    /* CYCLE_TIME in ms */          100,  // uint16_t
   };
 
   /**
@@ -121,7 +126,7 @@ class Creature {
     return _creatureDistances;
   }
 
-    // Run after construction but before loop.
+  // Run after construction but before loop.
   void setup();
 
   // Called during main loop.
@@ -226,6 +231,14 @@ class Creature {
 
   /** Radio object for tx/rx */
   RH_RF69 _rf69 = RH_RF69(RFM69_CS, RFM69_INT);
+
+  uint8_t _txCount, _rxCount;
+
+  /** Current battery voltage. */
+  float _battery;
+
+  /** Last known state of the PIR sensor. Used for duplicate detection. */
+  bool _PIR;
 };
 
 #endif  // _CREATURE_H_

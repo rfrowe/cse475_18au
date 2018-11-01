@@ -1,6 +1,14 @@
 #include "Creature.h"
 #include "State.h"
 
+State::State(Creature& creature, char* const name) : _creature(creature) {
+  strncpy(_name, name, 16);
+};
+
+char* State::getName() {
+  return _name;
+}
+
 void State::playSound(uint8_t sound_idx) {
   // TODO: implement
 }
