@@ -14,7 +14,7 @@
 // On Metro M4: 3, 6, 8, 11, A3 and MOSI
 #define PIN         A5
 #define NUM_PIXELS 16
-#define GESTURE 3 // 0: startle gesture, 1 2 3: ambient gestures,4 5 6: active gestures
+#define GESTURE 6 // 0: startle gesture, 1 2 3: ambient gestures,4 5 6: active gestures
 /****CHANGE THE GESTURE NUMBER TO TEST OUT EACH GESTURE****/
 
 Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
@@ -26,7 +26,21 @@ void setup() {
   oled.clearDisplay();
   oled.init();
   oled.setCursor(0, 0);
-  oled.print("LED Gestures");
+  if (0 == GESTURE) {
+    oled.print("Startle gesture");
+  } else if (1 == GESTURE) { // ambient
+    oled.print("Ambient Gesture 1");
+  } else if (2 == GESTURE) { // ambient
+    oled.print("Ambient Gesture 2");
+  } else if (3 == GESTURE) { // ambient
+    oled.print("Ambient Gesture 3");
+  } else if (4 == GESTURE) { // active
+    oled.print("Active Gesture 1");
+  } else if (5 == GESTURE) { // active
+    oled.print("Active Gesture 2");
+  } else if (6 == GESTURE) { // active
+    oled.print("Active Gesture 3");
+  }
   oled.display();
   
   strip.begin(); // Initialize the LEDs
@@ -174,7 +188,31 @@ void active2(void) {
 }
 
 void active3(void) {
-  
+  uint16_t i;
+  uint32_t temp;
+  strip.setBrightness(13);
+  for(;;) { // Red, green, blue
+    for(i=0; i<=strip.numPixels(); i++) {
+      strip.setPixelColor(i, 0xFF0000 << 8);
+      strip.show();
+      delay(50);
+    }
+    for(i=0; i<=strip.numPixels(); i++) {
+      strip.setPixelColor(i, 0);
+    }
+    strip.show();
+    delay(500);
+    for(i=0; i<=strip.numPixels(); i++) {
+      strip.setPixelColor(i,0xFF0000 << 8);
+    }
+    strip.show();
+    delay(500);
+    for(i=0; i<=strip.numPixels(); i++) {
+      strip.setPixelColor(i, 0);
+    }
+    strip.show();
+    delay(500);
+  }
 }
 
 // Input a value 0 to 255 to get a color value.
