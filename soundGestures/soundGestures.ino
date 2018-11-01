@@ -22,7 +22,7 @@ uint16_t noteCnt = 7;
 uint16_t noteLength = 50;
 uint16_t duration = 50;
 uint16_t tempo = 8;
-uint16_t volume = 30;
+uint16_t volume = 127;
 uint16_t chord3[3];
 uint16_t chord4[4];
 uint16_t chord6[6];
