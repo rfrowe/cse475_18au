@@ -1,6 +1,6 @@
 /*
  * Light gestures for startle, ambient, and active states.
- * Author: Akhil Avula, Kheng Wei
+ * Author: Akhil Avula, Kheng Wei Ang
  * EE 475 Autumn 2018
  */
 #include <Adafruit_FeatherOLED.h>
