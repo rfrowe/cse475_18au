@@ -327,7 +327,7 @@ void active2(void) {
   }
 }
 
-void active3(void) {
+void active3(void) { // maybe our startle
   uint16_t i;
   uint32_t temp;
   strip.setBrightness(13);
@@ -342,16 +342,18 @@ void active3(void) {
     }
     strip.show();
     delay(500);
-    for(i=0; i<=strip.numPixels(); i++) {
-      strip.setPixelColor(i,0xFF0000 << 8);
+    for (int j = 0; j < 2; j++) {
+      for(i=0; i<=strip.numPixels(); i++) {
+        strip.setPixelColor(i,0xFF0000 << 8);
+      }
+      strip.show();
+      delay(500);
+      for(i=0; i<=strip.numPixels(); i++) {
+        strip.setPixelColor(i, 0);
+      }
+      strip.show();
+      delay(500);
     }
-    strip.show();
-    delay(500);
-    for(i=0; i<=strip.numPixels(); i++) {
-      strip.setPixelColor(i, 0);
-    }
-    strip.show();
-    delay(500);
   }
 }
 
