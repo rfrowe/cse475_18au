@@ -194,7 +194,7 @@ void loop() {
       active2();
      } else if (6 == GESTURE) {
       midiSetInstrument(0, gesture6[0]);
-      active3();
+//      active3();
      }
    noInterrupts();
    // critical, time-sensitive code here
@@ -806,6 +806,7 @@ void TC5_Handler (void) {
       }  // END OF YOUR CODE
     TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code
   } else if(6 == GESTURE){
+    for(;;) { // Red, green, blue
     if(playFlag){
         if(!gestFlag){
           // start Gesture
@@ -827,7 +828,14 @@ void TC5_Handler (void) {
   
          //start note
           midiNoteOn(0, noteNum, volume);
-          
+          uint16_t i;
+          uint32_t temp;
+          strip.setBrightness(13);
+            for(i=0; i<=strip.numPixels(); i++) {
+              strip.setPixelColor(i, 0xFF0000 << 8);
+              strip.show();
+              delay(50);
+            }
           noteFlag = true;
        }
         duration -= 1; // sustains the note until duration = 0
@@ -842,6 +850,7 @@ void TC5_Handler (void) {
           noteFlag = false;
         }
       }  // END OF YOUR CODE
+    }
     TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code 
   }
 }

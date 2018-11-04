@@ -5,7 +5,7 @@
 #define CPU_HZ 48000000
 #define TIMER_PRESCALER_DIV 1000
 
-#define GESTURE 1 // 0 1 2 3 4 5 6 
+#define GESTURE 6 // 0 1 2 3 4 5 6 
 
 int sampleRate = 1000; //sample rate of the square wave in Hertz, how many times per second the TC5_Handler() function gets called per second basically
 
