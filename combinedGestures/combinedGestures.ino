@@ -176,25 +176,18 @@ void loop() {
    // set voice 0-14
      if(0 == GESTURE) {
       midiSetInstrument(0, gesture0[0]);
-      startleLight();
      }else if(1 == GESTURE) {
       midiSetInstrument(0, gesture1[0]);
-      ambient1();
      } else if (2 == GESTURE) {
       midiSetInstrument(0, gesture2[0]);
-      ambient2();
      } else if (3 == GESTURE) {
       midiSetInstrument(0, gesture3[0]);
-      ambient3();
      } else if(4 == GESTURE) {
       midiSetInstrument(0, gesture4[0]);
-      active1();
      } else if (5 == GESTURE) {
       midiSetInstrument(0, gesture5[0]);
-      active2();
      } else if (6 == GESTURE) {
       midiSetInstrument(0, gesture6[0]);
-//      active3();
      }
    noInterrupts();
    // critical, time-sensitive code here
@@ -203,6 +196,21 @@ void loop() {
    //set Tempo?? 10-9
    if(--tempo >0) tempo = 9;
    interrupts();
+//   if(0 == GESTURE) {
+//      startleLight();
+//   } else if(1 == GESTURE) {
+//      ambient1();
+//   } else if (2 == GESTURE) {
+//      ambient2();
+//   } else if (3 == GESTURE) {
+//      ambient3();
+//   } else if(4 == GESTURE) {
+//      active1();
+//   } else if (5 == GESTURE) {
+//      active2();
+//   } else if (6 == GESTURE) {
+//      active3();
+//   }
   }
 }
 
@@ -250,7 +258,7 @@ void ambient2(void) {
   uint16_t i;
   uint32_t temp;
   uint32_t elapsed, t, startTime = micros();
-    for(;;) {
+  for (;;) {
     t       = micros();
     elapsed = t - startTime;
     if(elapsed > 5000000) break; // Run for 5 seconds
@@ -266,7 +274,7 @@ void ambient3(void) {
   uint16_t i;
   uint32_t temp;
   uint32_t elapsed, t, startTime = micros();
-  for(;;) {
+    for (;;) {
     t       = micros();
     elapsed = t - startTime;
     if(elapsed > 5000000) break; // Run for 5 seconds
@@ -285,7 +293,7 @@ void ambient3(void) {
    }
    strip.setBrightness(0);
    strip.show();
-  }
+    }
 }
 
 void bounceBrightness(int low, int high, int delTime) {
@@ -331,7 +339,6 @@ void active3(void) { // maybe our startle
   uint16_t i;
   uint32_t temp;
   strip.setBrightness(13);
-//  for(;;) { // Red, green, blue
     for(i=0; i<=strip.numPixels(); i++) {
       strip.setPixelColor(i, 0xFF0000 << 8);
       strip.show();
@@ -354,7 +361,6 @@ void active3(void) { // maybe our startle
       strip.show();
       delay(500);
     }
-//  }
 }
 
 // Input a value 0 to 255 to get a color value.
