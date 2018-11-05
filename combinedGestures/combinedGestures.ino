@@ -18,7 +18,7 @@
 // On Metro M4: 3, 6, 8, 11, A3 and MOSI
 #define PIN         A5
 #define NUM_PIXELS 16
-#define GESTURE 6 // 0: startle gesture, 1 2 3: ambient gestures,4 5 6: active gestures
+#define GESTURE 2 // 0: startle gesture, 1 : ambient gesture, 2: active gesture
 /****CHANGE THE GESTURE NUMBER TO TEST OUT EACH GESTURE****/
 
 Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
@@ -79,51 +79,19 @@ uint16_t channel = 127;
 # define timpani 48
 # define synthBass1 39
 
-// startle
-//uint8_t gesture0[14] = 
-//   {20,4,
-//   volume,57,eighthNote, 0,57,eighthNote, 0,57,eighthNote, 0,0,eighthNote};
-uint8_t gesture0[14] =
-//  {117, 4,
-//  volume,40,quarterNote, volume,40,halfNote, volume,28,quarterNote, volume,28,halfNote};
+
+uint8_t startleSound[14] =
   {89, 4,
   volume,88,quarterNote, volume,88,halfNote, volume,76,quarterNote, volume,76,halfNote};
-    
-//uint8_t gesture0[34] = 
-//   {62,4,
-//   volume,72,73,84,85,96,97,quarterNote, 0,72,73,84,85,96,97,quarterNote, 
-//   0,72,73,84,85,96,97,quarterNote, 0,72,73,84,85,96,97,quarterNote};
-// gestures1-3 are ambient
-//uint8_t gesture1[8] = 
-//   {synthVoice,8,
-//   volume,58,64,68,71,fourTiedWholeNotes};
 
-uint8_t gesture2[27] = 
+uint8_t ambientSound[27] = 
    {brightness,3,
    volume,70,wholeNote, volume,72,wholeNote, volume,74,wholeNote};
 
-uint8_t gesture3[14] = 
-   {fifthsLead,4,
-   volume,47,wholeNote, volume,54,halfNote, volume,59,halfNote, volume,58,halfNote};
-
-// gestures4-6 are active
-uint8_t gesture4[38] = 
-   {synthBass1,12,
-   volume,55,eighthNote, volume,57,eighthNote, volume,64,eighthNote, volume,62,eighthNote,
-   volume,50,eighthNote, volume,52,eighthNote, volume,57,eighthNote, volume,55,eighthNote,
-   volume,47,eighthNote, volume,49,eighthNote, volume,54,eighthNote, volume,52,eighthNote};
-
-uint8_t gesture5[23] = 
-   {timpani,7,
+uint8_t activeSound[23] = 
+   {104,7,
    volume,52,eighthNote, volume,52,eighthNote, volume,64,eighthNote,
    volume,52,eighthNote, volume,52,eighthNote, volume,52,eighthNote, volume,59,eighthNote};
-
-uint8_t gesture1[12] = 
-   {84,2,
-   volume,60,63,67,quarterNote, volume,63,67,71,quarterNote};
-uint8_t gesture6[12] = 
-   {104,1,
-   volume,60,63,67,wholeNote};
 
 void setup() {
   delay(100);
@@ -135,22 +103,14 @@ void setup() {
   oled.display();
   oled.clearDisplay();
   oled.init();
-  oled.setCursor(0, 0);
+  oled.setCursor(0, 0); // 0: startle, 1: ambient, 2: active
   if (0 == GESTURE) {
     oled.print("Startle Gesture");
   } else if (1 == GESTURE) { // ambient
-    oled.print("Ambient Gesture 1");
+    oled.print("Ambient Gesture");
   } else if (2 == GESTURE) { // ambient
-    oled.print("Ambient Gesture 2");
-  } else if (3 == GESTURE) { // ambient
-    oled.print("Ambient Gesture 3");
-  } else if (4 == GESTURE) { // active
-    oled.print("Active Gesture 1");
-  } else if (5 == GESTURE) { // active
-    oled.print("Active Gesture 2");
-  } else if (6 == GESTURE) { // active
-    oled.print("Active Gesture 3");
-  }
+    oled.print("Active Gesture");
+  } 
   oled.display();
 
   // for lightGestures
@@ -175,20 +135,12 @@ void loop() {
     //if(++gNum >7) gNum = 0;
    // set voice 0-14
      if(0 == GESTURE) {
-      midiSetInstrument(0, gesture0[0]);
+      midiSetInstrument(0, startleSound[0]);
      }else if(1 == GESTURE) {
-      midiSetInstrument(0, gesture1[0]);
+      midiSetInstrument(0, ambientSound[0]);
      } else if (2 == GESTURE) {
-      midiSetInstrument(0, gesture2[0]);
-     } else if (3 == GESTURE) {
-      midiSetInstrument(0, gesture3[0]);
-     } else if(4 == GESTURE) {
-      midiSetInstrument(0, gesture4[0]);
-     } else if (5 == GESTURE) {
-      midiSetInstrument(0, gesture5[0]);
-     } else if (6 == GESTURE) {
-      midiSetInstrument(0, gesture6[0]);
-     }
+      midiSetInstrument(0, activeSound[0]);
+     } 
    noInterrupts();
    // critical, time-sensitive code here
    playFlag = true;
@@ -196,146 +148,19 @@ void loop() {
    //set Tempo?? 10-9
    if(--tempo >0) tempo = 9;
    interrupts();
-//   if(0 == GESTURE) {
-//      startleLight();
-//   } else if(1 == GESTURE) {
-//      ambient1();
-//   } else if (2 == GESTURE) {
-//      ambient2();
-//   } else if (3 == GESTURE) {
-//      ambient3();
-//   } else if(4 == GESTURE) {
-//      active1();
-//   } else if (5 == GESTURE) {
-//      active2();
-//   } else if (6 == GESTURE) {
-//      active3();
-//   }
+   if(0 == GESTURE) {
+      startleLight();
+   } else if(1 == GESTURE) {
+      ambientLight();
+   } else if (2 == GESTURE) {
+      activeLight();
+   }
   }
 }
 
 // FROM lightGestures.ino
+
 void startleLight(void) {
-  uint16_t i;
-  uint32_t temp;
-  // 'Color wipe' across all pixels
-  for(uint32_t c = 0xFF0000; c; c >>= 16) { // Red, blue
-    for(i=0; i<strip.numPixels(); i++) {
-      if (i%2 == 0) {
-        strip.setPixelColor(i, c);
-      } else {
-        temp = c >> 16;
-        strip.setPixelColor(i, temp);
-      }
-    }
-    strip.show();
-    delay(500);
-  }
-}
-
-void ambient1(void) {
-  uint16_t i;
-  uint32_t temp;
-  // 'Color wipe' across all pixels
-  for(uint32_t c = 0xFF0000; c; c >>=8) {
-    for(i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, c);
-    }
-    for (int j = 0; j < 33; j++) {
-      strip.setBrightness(j);
-      strip.show();
-      delay(50);
-    }
-    for (int k = 32; k >= 0; k--) {
-      strip.setBrightness(k);
-      strip.show();
-      delay(50);
-    }   
-  }
-}
-
-void ambient2(void) {
-  uint16_t i;
-  uint32_t temp;
-  uint32_t elapsed, t, startTime = micros();
-  for (;;) {
-    t       = micros();
-    elapsed = t - startTime;
-    if(elapsed > 5000000) break; // Run for 5 seconds
-    for(i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((uint8_t)(
-        (elapsed * 256 / 1000000) + i * 256 / strip.numPixels())));
-    }
-    bounceBrightness(8,33,50);
-  }
-}
-
-void ambient3(void) {
-  uint16_t i;
-  uint32_t temp;
-  uint32_t elapsed, t, startTime = micros();
-    for (;;) {
-    t       = micros();
-    elapsed = t - startTime;
-    if(elapsed > 5000000) break; // Run for 5 seconds
-    for(i=0; i<strip.numPixels() / 2; i++) {
-      strip.setPixelColor(i, Wheel((uint8_t)(
-        (elapsed * 256 / 1000000) + i * 256 / strip.numPixels())));
-      bounceBrightness(0,33,50);
-      strip.setPixelColor(i + strip.numPixels() / 2, Wheel((uint8_t)(
-        (elapsed * 256 / 1000000) + i * 256 / strip.numPixels())));
-      bounceBrightness(0,33, 50);
-      strip.setBrightness(0);
-      strip.show();
-   }
-   for(i=0; i<strip.numPixels(); i++) {
-     strip.setPixelColor(i, 0);
-   }
-   strip.setBrightness(0);
-   strip.show();
-    }
-}
-
-void bounceBrightness(int low, int high, int delTime) {
-  for (int j = low; j < high; j++) {
-    strip.setBrightness(j);
-    strip.show();
-    delay(delTime);
-  }
-  for (int k = high - 1; k >= low; k--) {
-    strip.setBrightness(k);
-    strip.show();
-    delay(delTime);
-  }
-}
-
-void active1(void) {
-  uint16_t i;
-  uint32_t temp;
-  for(uint32_t c = 0xFF0000; c; c >>= 8) { // Red, green, blue
-    for(i=0; i<strip.numPixels()/2; i++) {
-      strip.setPixelColor(i, c);
-      strip.setPixelColor(i + strip.numPixels()/2, c >> 8);
-      strip.show();
-      delay(50);
-    }
-  }
-}
-
-void active2(void) {
-  uint16_t i;
-  uint32_t temp;
-  for(uint32_t c = 0xFF0000; c; c >>= 8) { // Red, green, blue
-    for(i=0; i<=strip.numPixels()/2; i++) {
-      strip.setPixelColor(i, c);
-      strip.setPixelColor(strip.numPixels() - i, c >> 8);
-      strip.show();
-      delay(50);
-    }
-  }
-}
-
-void active3(void) { // maybe our startle
   uint16_t i;
   uint32_t temp;
   strip.setBrightness(13);
@@ -361,6 +186,48 @@ void active3(void) { // maybe our startle
       strip.show();
       delay(500);
     }
+}
+
+void ambientLight(void) {
+  uint16_t i;
+  uint32_t temp;
+  uint32_t elapsed, t, startTime = micros();
+  for (;;) {
+    t       = micros();
+    elapsed = t - startTime;
+    if(elapsed > 5000000) break; // Run for 5 seconds
+    for(i=0; i<strip.numPixels(); i++) {
+      strip.setPixelColor(i, Wheel((uint8_t)(
+        (elapsed * 256 / 1000000) + i * 256 / strip.numPixels())));
+    }
+    bounceBrightness(8,33,50);
+  }
+}
+
+void bounceBrightness(int low, int high, int delTime) {
+  for (int j = low; j < high; j++) {
+    strip.setBrightness(j);
+    strip.show();
+    delay(delTime);
+  }
+  for (int k = high - 1; k >= low; k--) {
+    strip.setBrightness(k);
+    strip.show();
+    delay(delTime);
+  }
+}
+
+void activeLight(void) {
+  uint16_t i;
+  uint32_t temp;
+  for(uint32_t c = 0xFF0000; c; c >>= 8) { // Red, green, blue
+    for(i=0; i<=strip.numPixels()/2; i++) {
+      strip.setPixelColor(i, c);
+      strip.setPixelColor(strip.numPixels() - i, c >> 8);
+      strip.show();
+      delay(50);
+    }
+  }
 }
 
 // Input a value 0 to 255 to get a color value.
@@ -505,17 +372,17 @@ void TC5_Handler (void) {
           //set Voice
           gCnt = 1;
           //set notecnt
-          noteCnt = gesture0[gCnt++];
+          noteCnt = startleSound[gCnt++];
           
         }
         if(!noteFlag){ // sets characteristics of the note
 
           //set volume
-          volume = gesture0[gCnt++];
+          volume = startleSound[gCnt++];
           //set noteNum
-          noteNum = gesture0[gCnt++];
+          noteNum = startleSound[gCnt++];
           //set duration
-          duration = gesture0[gCnt++]-tempo;
+          duration = startleSound[gCnt++]-tempo;
   
          //start note
           midiNoteOn(0, noteNum, volume);
@@ -534,132 +401,8 @@ void TC5_Handler (void) {
           noteFlag = false;
         }
       }  // END OF YOUR CODE
-    TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code
-//          if(playFlag){
-//        if(!gestFlag){
-//          // start Gesture
-//          gestFlag = true;
-//          //set Voice
-//          gCnt = 1;
-//          //set notecnt
-//          noteCnt = gesture3[gCnt++];
-//          
-//        }
-//        if(!noteFlag){ // sets characteristics of the note
-//
-//          //set volume
-//          volume = gesture0[gCnt++];
-//          //set noteNum
-//          noteNum = gesture0[gCnt++];
-//          //set duration
-//          duration = gesture0[gCnt++]-tempo;
-//  
-//         //start note
-//          midiNoteOn(0, noteNum, volume);
-//          
-//          noteFlag = true;
-//       }
-//        duration -= 1; // sustains the note until duration = 0
-//        if(duration==0){
-//          noteCnt -= 1;
-//          midiNoteOff(0, noteNum, 0);
-//          if(noteCnt==0){
-//            //clear all flags
-//            playFlag = false;
-//            gestFlag = false;
-//          }
-//          noteFlag = false;
-//        }
-//      }  // END OF YOUR CODE
-//    TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code  
-  } else if(1 == GESTURE){
-     if(playFlag){
-        if(!gestFlag){
-          // start Gesture
-          gestFlag = true;
-          //set Voice
-          gCnt = 1;
-          //set notecnt
-          noteCnt = gesture6[gCnt++];
-          
-        }
-        if(!noteFlag){ // sets characteristics of the note
-
-          volatile int i;
-          for (i=0; i<sizeof(chord3); i++) {
-            chord3[i] = gesture6[gCnt++];
-          }
-          //set duration
-          duration = gesture6[gCnt++]-tempo;
-          
-          //start note
-          for (i=0; i<sizeof(chord3); i++) {
-            noteNum = chord3[i];
-            midiNoteOn(0, noteNum, volume); // plays the note
-          }
-          
-          noteFlag = true;
-       }
-        duration -= 1; // sustains the note until duration = 0
-        if(duration==0){
-          noteCnt -= 1;
-          volatile int j;
-          for (j=0; j<sizeof(chord3); j++) {
-            noteNum = chord3[j];
-            midiNoteOff(0, noteNum, 0); // plays the note
-          }
-          if(noteCnt==0){
-            //clear all flags
-            playFlag = false;
-            gestFlag = false;
-          }
-          noteFlag = false;
-        }
-      }  // END OF YOUR CODE
-    TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code   
-    
-
-//      if(playFlag){
-//        if(!gestFlag){
-//          // start Gesture
-//          gestFlag = true;
-//          //set Voice
-//          gCnt = 1;
-//          //set notecnt
-//          noteCnt = gesture1[gCnt++];
-//          
-//        }
-//        if(!noteFlag){ // sets characteristics of the note
-//
-//          volatile int i;
-//          for (i=0; i<sizeof(chord4); i++) {
-//            chord4[i] = gesture1[gCnt++];
-//          }
-//          //set duration
-//          duration = gesture1[gCnt++]-tempo;
-//          
-//          //start note
-//          for (i=0; i<sizeof(chord4); i++) {
-//            noteNum = chord4[i];
-//            midiNoteOn(0, noteNum, volume); // plays the note
-//          }
-//          
-//          noteFlag = true;
-//       }
-//        duration -= 1; // sustains the note until duration = 0
-//        if(duration==0){
-//          noteCnt -= 1;
-//          //midiNoteOff(0, noteNum, 127);
-//          if(noteCnt==0){
-//            //clear all flags
-//            playFlag = false;
-//            gestFlag = false;
-//          }
-//          noteFlag = false;
-//        }
-//      }  // END OF YOUR CODE
-//    TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code
-  } else if (2 == GESTURE) {
+    TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code 
+  } else if (1 == GESTURE) {
       if(playFlag){
         if(!gestFlag){
           // start Gesture
@@ -667,17 +410,17 @@ void TC5_Handler (void) {
           //set Voice
           gCnt = 1;
           //set notecnt
-          noteCnt = gesture2[gCnt++];
+          noteCnt = ambientSound[gCnt++];
           
         }
         if(!noteFlag){ // sets characteristics of the note
 
           //set volume
-          volume = gesture2[gCnt++];
+          volume = ambientSound[gCnt++];
           //set noteNum
-          noteNum = gesture2[gCnt++];
+          noteNum = ambientSound[gCnt++];
           //set duration
-          duration = gesture2[gCnt++]-tempo;
+          duration = ambientSound[gCnt++]-tempo;
   
          //start note
           midiNoteOn(0, noteNum, volume);
@@ -697,7 +440,7 @@ void TC5_Handler (void) {
         }
       }  // END OF YOUR CODE
     TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code
-  } else if (3 == GESTURE) {
+  } else if(2 == GESTURE){
     if(playFlag){
         if(!gestFlag){
           // start Gesture
@@ -705,135 +448,21 @@ void TC5_Handler (void) {
           //set Voice
           gCnt = 1;
           //set notecnt
-          noteCnt = gesture3[gCnt++];
+          noteCnt = activeSound[gCnt++];
           
         }
         if(!noteFlag){ // sets characteristics of the note
 
           //set volume
-          volume = gesture3[gCnt++];
+          volume = activeSound[gCnt++];
           //set noteNum
-          noteNum = gesture3[gCnt++];
+          noteNum = activeSound[gCnt++];
           //set duration
-          duration = gesture3[gCnt++]-tempo;
+          duration = activeSound[gCnt++]-tempo;
   
          //start note
           midiNoteOn(0, noteNum, volume);
           
-          noteFlag = true;
-       }
-        duration -= 1; // sustains the note until duration = 0
-        if(duration==0){
-          noteCnt -= 1;
-          //midiNoteOff(0, noteNum, 0);
-          if(noteCnt==0){
-            //clear all flags
-            playFlag = false;
-            gestFlag = false;
-          }
-          noteFlag = false;
-        }
-      }  // END OF YOUR CODE
-    TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code
-  } else if (4 == GESTURE) { // Active 1
-    if(playFlag){
-        if(!gestFlag){
-          // start Gesture
-          gestFlag = true;
-          //set Voice
-          gCnt = 1;
-          //set notecnt
-          noteCnt = gesture4[gCnt++];
-          
-        }
-        if(!noteFlag){ // sets characteristics of the note
-
-          //set volume
-          volume = gesture4[gCnt++];
-          //set noteNum
-          noteNum = gesture4[gCnt++];
-          //set duration
-          duration = gesture4[gCnt++]-tempo;
-  
-         //start note
-          midiNoteOn(0, noteNum, volume);
-          
-          noteFlag = true;
-       }
-        duration -= 1; // sustains the note until duration = 0
-        if(duration==0){
-          noteCnt -= 1;
-          midiNoteOff(0, noteNum, 127);
-          if(noteCnt==0){
-            //clear all flags
-            playFlag = false;
-            gestFlag = false;
-          }
-          noteFlag = false;
-        }
-      }  // END OF YOUR CODE
-    TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code
-  } else if (5 == GESTURE) { // Active 1
-    if(playFlag){
-        if(!gestFlag){
-          // start Gesture
-          gestFlag = true;
-          //set Voice
-          gCnt = 1;
-          //set notecnt
-          noteCnt = gesture5[gCnt++];
-          
-        }
-        if(!noteFlag){ // sets characteristics of the note
-
-          //set volume
-          volume = gesture5[gCnt++];
-          //set noteNum
-          noteNum = gesture5[gCnt++];
-          //set duration
-          duration = gesture5[gCnt++]-tempo;
-  
-         //start note
-          midiNoteOn(0, noteNum, volume);
-          
-          noteFlag = true;
-       }
-        duration -= 1; // sustains the note until duration = 0
-        if(duration==0){
-          noteCnt -= 1;
-          midiNoteOff(0, noteNum, 127);
-          if(noteCnt==0){
-            //clear all flags
-            playFlag = false;
-            gestFlag = false;
-          }
-          noteFlag = false;
-        }
-      }  // END OF YOUR CODE
-    TC5->COUNT16.INTFLAG.bit.MC0 = 1; //don't change this, it's part of the timer code
-  } else if(6 == GESTURE){
-    if(playFlag){
-        if(!gestFlag){
-          // start Gesture
-          gestFlag = true;
-          //set Voice
-          gCnt = 1;
-          //set notecnt
-          noteCnt = gesture5[gCnt++];
-          
-        }
-        if(!noteFlag){ // sets characteristics of the note
-
-          //set volume
-          volume = gesture5[gCnt++];
-          //set noteNum
-          noteNum = gesture5[gCnt++];
-          //set duration
-          duration = gesture5[gCnt++]-tempo;
-  
-         //start note
-          midiNoteOn(0, noteNum, volume);
-
           noteFlag = true;
        }
         duration -= 1; // sustains the note until duration = 0
