@@ -248,7 +248,7 @@ void Creature::_txSendState(uint8_t oldState, uint8_t newState) {
 
 void Creature::_pollRadio() {
   // Poll radio for packets
-  if (_rf69.waitAvailableTimeout(100)) {
+  if (_rf69.waitAvailableTimeout(50)) {
     uint8_t len = sizeof(_buf);
 
     // Should be a message available
