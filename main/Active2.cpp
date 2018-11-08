@@ -8,7 +8,8 @@ uint8_t Active2::getNumRepeats() {
 }
 
 State* Active2::transition() {
- return this;
+ State::transition();
+// return this;
 }
 
 uint8_t Active2::getId() {

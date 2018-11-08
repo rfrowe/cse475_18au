@@ -11,7 +11,8 @@ uint8_t Startle::getNumRepeats() {
 }
 
 State* Startle::transition() {
- return this;
+ State::transition();
+// return this;
 }
 
 uint8_t Startle::getId() {

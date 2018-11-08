@@ -8,7 +8,8 @@ uint8_t Ambient3::getNumRepeats() {
 }
 
 State* Ambient3::transition() {
- return this;
+ State::transition();
+// return this;
 }
 
 uint8_t Ambient3::getId() {
