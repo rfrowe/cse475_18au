@@ -112,7 +112,7 @@ class State {
    * Called when this creature is successfully startled. Should set the _creature's
    * _next state to the startle state.
    */
-  virtual void startled() = 0;
+  virtual void startled();
 
 
   /**

@@ -38,6 +38,10 @@ State* State::transition() {
   // TODO: implement
 }
 
+void State::startled() {
+  // TOOD: implement
+}
+
 uint8_t* State::getGlobalWeights() {
   return _globalWeights;
 }
