@@ -9,6 +9,8 @@
 // TODO: put your kit number here
 #define KIT_NUM 0
 
+#define VERSION "1.0"
+
 // Returns current battery voltage
 inline float getBatteryVoltage() {
   // Update battery field with a little weighting to stop rapid changes.
@@ -324,17 +326,29 @@ void Creature::_updateDisplay() {
   oled.renderBattery();
 
   oled.setCursor(0, 0);
+  oled.print(_state ? _state->getName() : "None");
+
+  oled.setCursor(0, 11);
   oled.print(F("TXRX:"));
   oled.print(_txCount);
   oled.print(F("/"));
   oled.println(_rxCount);
 
-  oled.setCursor(0, 9);
-  oled.print(_state ? _state->getName() : "None");
-
-  oled.setCursor((OLED_WIDTH - 3) * 6, 9);
+  oled.setCursor((OLED_WIDTH - 2 - (_addr > 9) - (_addr > 99) - sizeof(VERSION)) * 6, 11);
   oled.print("#");
   oled.print(_addr);
+  oled.print("v");
+  oled.print(VERSION);
+
+  oled.setCursor(0, 22);
+  oled.print(F("Sound: "));
+  oled.print(Midi::currentIdx);
+
+  // TODO(rfrowe): update with real light index, when added
+  uint8_t lightIdx = -1;
+  oled.setCursor((OLED_WIDTH - 8 - (lightIdx > 9) - (lightIdx > 99)) * 6, 22);
+  oled.print(F("Light: "));
+  oled.print(lightIdx);
 
   oled.display();
 }
@@ -373,6 +387,7 @@ void Creature::setup() {
   }
   _rf69.setTxPower(GLOBALS.TX_POWER, true);
 
+  // Guaranteed random https://xkcd.com/221
   uint8_t key[] = {0x98, 0xe8, 0xac, 0xe6, 0xfa, 0xca, 0xc1, 0xb8,
                    0xf7, 0xf2, 0x18, 0xc3, 0x5c, 0xce, 0x96, 0x65};
   _rf69.setEncryptionKey(key);

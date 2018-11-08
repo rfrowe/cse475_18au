@@ -197,10 +197,10 @@ class Creature {
    */
   void _updateDistance(uint8_t addr, int8_t rssi);
 
-  /** Measures battery voltage and updates OLED */
+  /** Measures battery voltage and updates OLED. */
   void _updateDisplay();
 
-  /** Current and next state, or null if no next state */
+  /** Current and next state, or null if no next state. */
   State *_state, *_next;
 
   uint8_t _kitNum, _addr;
