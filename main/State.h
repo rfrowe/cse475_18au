@@ -5,6 +5,8 @@
 
 class Creature;
 
+#define MAX_NAME_LEN 12
+
 #define ACTIVE_STATES 3
 #define AMBIENT_STATES 3
 
@@ -42,7 +44,7 @@ class State {
   virtual uint8_t getId() = 0;
 
   /**
-   * @returns name of this state, capped to 16 chars.
+   * @returns name of this state, capped to 12 chars.
    */
   virtual char* getName();
 
@@ -103,7 +105,7 @@ class State {
    *
    * @param payload Should be the startle strength and id.
    */
-  virtual bool rxStartle(uint8_t len, uint8_t* payload) = 0;
+  virtual bool rxStartle(uint8_t len, uint8_t* payload);
 
   // Event handlers
   /**
@@ -132,7 +134,7 @@ class State {
 
   uint8_t _globalWeights[ACTIVE_STATES + AMBIENT_STATES] = { 0 };
  private:
-  char _name[17];
+  char _name[MAX_NAME_LEN + 1];
 };
 
 #endif  // _STATE_H_

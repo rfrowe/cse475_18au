@@ -2,19 +2,22 @@
 
 #include <Adafruit_GFX.h>
 
-uint8_t scale_notes[8] = {64, 66, 68, 70, 72, 74, 76, 78};
-uint8_t scale_durations[8] = {50, 50, 50, 50, 50, 50, 50, 50};
-SoundGesture Midi::SCALE = {
+// Define your new Midi sounds here! Make sure to add them to the header and Midi::SOUNDS.
+Sound Midi::SCALE(
   VS1053_BANK_MELODY,
-  43,
+  VS1053_GM1_CELLO,
   127,
   true,
   8,
-  scale_notes,
-  scale_durations
-};
+  (uint8_t[]){64, 66, 68, 70, 72, 74, 76, 78},
+  (uint8_t[]){50, 50, 50, 50, 50, 50, 50, 50}
+);
 
-SoundGesture* Midi::current = nullptr;
+Sound* Midi::SOUNDS[2] = {nullptr, &Midi::SCALE};
+
+// Set default sound to none.
+uint8_t Midi::currentIdx = 0;
+Sound* Midi::current = Midi::SOUNDS[Midi::currentIdx];
 
 bool gestFlag = false;
 bool noteFlag = false;
@@ -113,17 +116,24 @@ void Midi::tcStartCounter() {
   while (tcIsSyncing()); //wait until snyc'd
 }
 
-void Midi::setCurrent(SoundGesture* gesture) {
+void Midi::setSound(uint8_t soundIdx) {
   noInterrupts();
 
-  if (Midi::current != gesture) {
-    if (Midi::current != nullptr && noteFlag) {
-      midiNoteOff(0, Midi::current->notes[noteIdx], Midi::current->volume);
+  // Constrain soundIdx. Anything outside of the bounds of the array is 0.
+  if (soundIdx > sizeof(SOUNDS) / sizeof(void*)) {
+    soundIdx = -1;
+  }
+
+  if (current != SOUNDS[soundIdx]) {
+    if (current != nullptr && noteFlag) {
+      midiNoteOff(0, current->notes[noteIdx], current->volume);
+      noteFlag = false;
     }
 
-    Midi::current = gesture;
+    currentIdx = soundIdx;
+    current = SOUNDS[soundIdx];
 
-    if (gesture == nullptr) {
+    if (current == nullptr) {
       noteFlag = false;
       gestFlag = false;
     }
