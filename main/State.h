@@ -105,7 +105,7 @@ class State {
    *
    * @param payload Should be the startle strength and id.
    */
-  virtual bool rxStartle(uint8_t len, uint8_t* payload);
+  virtual bool rxStartle(int8_t rssi, uint8_t len, uint8_t* payload);
 
   // Event handlers
   /**

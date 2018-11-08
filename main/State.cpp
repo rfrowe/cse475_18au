@@ -26,7 +26,7 @@ bool State::rxPlayEffect(uint8_t len, uint8_t* payload) {
   // TODO: implement
 }
 
-bool State::rxStartle(uint8_t len, uint8_t* payload) {
+bool State::rxStartle(int8_t rssi, uint8_t len, uint8_t* payload) {
   // TODO: implement
 }
 
