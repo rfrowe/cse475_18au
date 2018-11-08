@@ -32,6 +32,8 @@ Creature::Creature() {
 
   _lastStartle = millis();
   _lastLoop = millis();
+
+//  Adafruit_BluefruitLE_SPI a = ;
 }
 
 int Creature::_get_int() {
@@ -43,6 +45,32 @@ int Creature::_get_int() {
   int i2 = (int) strtol(modeCharStr, NULL, 0);
 
   return i1 > i2 ? i1 : i2;
+}
+
+void Creature::_initializeBluetooth() {
+  if (!_blu.begin(false)) { // verbose
+    dprintln(F("Failed to intialize BLUEFRUIT module"));
+    while (1);
+  }
+  //_blu.echo(false);
+
+  /*if (!_blu.factoryReset()) {
+    dprintln(F("Could not factory reset"));
+    while (1);
+  }
+  Serial.print("D");
+  dprintln(F("BLUEFRUIT info:"));
+  //#ifdef DEBUG
+  _blu.info();
+  //#endif
+  Serial.print("E");
+  
+  Serial.print("F");*/
+  // #ifdef DEBUG
+  // _blu.info();
+  // #endif
+  _blu.verbose(false);
+  _blu.setMode(BLUEFRUIT_MODE_DATA);
 }
 
 void Creature::_processCommand() {
@@ -58,8 +86,10 @@ void Creature::_processCommand() {
           if (!res) {
             Serial.print("ERROR ");
           }
-          Serial.print("Stopping creature #");
-          Serial.println(dst);
+          Serial.print(dst == 255 ? "Stopping all creatures" : "Stopping creature #");
+          if (dst != 255) {
+            Serial.print(dst);
+          }
           Serial.println();
         }
       }
@@ -76,8 +106,10 @@ void Creature::_processCommand() {
           if (!res) {
             Serial.print("ERROR ");
           }
-          Serial.print("Starting creature #");
-          Serial.print(dst);
+          Serial.print(dst == 255 ? "Starting all creatures" : "Starting creature #");
+          if (dst != 255) {
+            Serial.print(dst);
+          }
           Serial.print(" with mode 0x");
           Serial.println(mode, HEX);
           Serial.println();
@@ -94,8 +126,10 @@ void Creature::_processCommand() {
           if (!res) {
             Serial.print("ERROR ");
           }
-          Serial.print("Teling creature #");
-          Serial.print(dst);
+          Serial.print(dst == 255 ? "Broadcasting to all creatures" : "Telling creature #");
+          if (dst != 255) {
+            Serial.print(dst);
+          }
           Serial.print(" to play sound 0x");
           Serial.println(sound, HEX);
           Serial.println();
@@ -113,8 +147,10 @@ void Creature::_processCommand() {
           if (!res) {
             Serial.print("ERROR ");
           }
-          Serial.print("Teling creature #");
-          Serial.print(dst);
+          Serial.print(dst == 255 ? "Broadcasting to all creatures" : "Telling creature #");
+          if (dst != 255) {
+            Serial.print(dst);
+          }
           Serial.print(" to play effect 0x");
           Serial.println(effect, HEX);
           Serial.println();
@@ -185,6 +221,8 @@ void Creature::_processCommand() {
 
         bool res = tx(pid, dst, sz, pld);
       }
+    } else if (str.equals("update")) {
+       tx(0, 0xFF, sizeof(GLOBALS), (uint8_t*)&GLOBALS);
     } else if (str.equals("states")) {
       unsigned long now = millis();
       for (int i = 1; i < GLOBALS.NUM_CREATURES + 1; i++) {
@@ -200,31 +238,31 @@ void Creature::_processCommand() {
       Serial.println();
     } else if (str.equals("globals")) {
 
-      Serial.print("TX_POWER                    ==   ");
+      Serial.print("0\t TX_POWER                    ==   ");
       Serial.println(GLOBALS.TX_POWER);
 
-      Serial.print("STARTLE_RAND_MIN            ==   ");
+      Serial.print("1\t STARTLE_RAND_MIN            ==   ");
       Serial.println(GLOBALS.STARTLE_RAND_MIN);
 
-      Serial.print("STARTLE_RAND_MAX            ==   ");
+      Serial.print("2\t STARTLE_RAND_MAX            ==   ");
       Serial.println(GLOBALS.STARTLE_RAND_MAX);
 
-      Serial.print("STARTLE_MAX                 ==   ");
+      Serial.print("3\t STARTLE_MAX                 ==   ");
       Serial.println(GLOBALS.STARTLE_MAX);
 
-      Serial.print("STARTLE_THRESHOLD           ==   ");
+      Serial.print("4\t STARTLE_THRESHOLD           ==   ");
       Serial.println(GLOBALS.STARTLE_THRESHOLD);
 
-      Serial.print("STARTLE_DECAY               ==   ");
+      Serial.print("5\t STARTLE_DECAY               ==   ");
       Serial.println(GLOBALS.STARTLE_DECAY);
 
-      Serial.print("NUM_CREATURES               ==   ");
+      Serial.print("6\t NUM_CREATURES               ==   ");
       Serial.println(GLOBALS.NUM_CREATURES);
 
-      Serial.print("STARTLE_THRESHOLD_DECAY     ==   ");
+      Serial.print("7\t STARTLE_THRESHOLD_DECAY     ==   ");
       Serial.println(GLOBALS.STARTLE_THRESHOLD_DECAY);
 
-      Serial.print("CYCLE_TIME                  ==   ");
+      Serial.print("8\t CYCLE_TIME                  ==   ");
       Serial.println(GLOBALS.CYCLE_TIME);
 
       Serial.println();
@@ -236,6 +274,9 @@ void Creature::_processCommand() {
 
       Serial.println("states");
       Serial.println("   Prints the current creature states & time since last transmission\n");
+
+      Serial.println("update");
+      Serial.println("   Force transmits globals to all creatures\n");
       
       Serial.println("stop <creature number>");
       Serial.println("   Stops the given creature\n");
@@ -301,7 +342,6 @@ void Creature::loop() {
 
   // Only trigger state loops and transitions every CYCLE_TIME ms
   if (dt > CONT_CYCLE_TIME) {
-
     for (int i = 1; i < GLOBALS.NUM_CREATURES + 1; i++) {
       if (thisLoop - _creatureTimes[i] > 60000) {
         _creatureTimes[i] = 0;
@@ -550,6 +590,8 @@ void Creature::setup() {
   strip.begin();
   strip.setBrightness(5);
   strip.show();
+
+  _initializeBluetooth();
 
   pinMode(RFM69_RST, OUTPUT);
   digitalWrite(RFM69_RST, LOW);

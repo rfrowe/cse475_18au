@@ -15,21 +15,22 @@ uint8_t Controller::getId() {
   return 0;
 }
 
+int counter = 0;
 void Controller::loop(uint32_t dt) {
-  txGlobals();
+  
+  if (!(counter % 10)) {
+    txGlobals();
+  }
   txStates();
+  counter++;
 }
 
 bool Controller::txStates() {
-  int size = _creature.GLOBALS.NUM_CREATURES + 1;
-
-  bool res = _creature.tx(5, 0xFF, size, _creature.getCreatureStates());
+  return _creature.tx(5, 0xFF, _creature.GLOBALS.NUM_CREATURES + 1, _creature.getCreatureStates());
 }
 
 bool Controller::txGlobals() {
-  int size = sizeof(_creature.GLOBALS);
-
-  bool res = _creature.tx(0, 0xFF, size, (uint8_t*)&_creature.GLOBALS);
+  return _creature.tx(0, 0xFF, sizeof(_creature.GLOBALS), (uint8_t*)&_creature.GLOBALS);
 }
 
 const uint8_t* Controller::getLocalWeights() {

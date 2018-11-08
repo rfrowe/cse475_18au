@@ -8,6 +8,9 @@
 #include <RH_RF69.h>
 #include <Wire.h>
 
+#include "Adafruit_BLE.h"
+#include "Adafruit_BluefruitLE_SPI.h"
+
 class State;
 
 #define VREF 3.3
@@ -39,6 +42,11 @@ class State;
 
 #define CONT_CYCLE_TIME 5000
 #define CLEAR_TIME 60000
+
+
+#define BLUEFRUIT_SPI_CS      8
+#define BLUEFRUIT_SPI_IRQ     7
+#define BLUEFRUIT_SPI_RST     40
 
 static const uint8_t GLOBALS_LEN = 9;
 struct Globals {
@@ -215,6 +223,8 @@ class Creature {
   /** Measures battery voltage and updates OLED */
   void _updateDisplay();
 
+  void _initializeBluetooth();
+
   /** Current and next state, or null if no next state */
   State *_state, *_next;
 
@@ -253,6 +263,8 @@ class Creature {
   uint8_t _txCount, _rxCount;
 
   float _battery;
+
+  Adafruit_BluefruitLE_SPI _blu = Adafruit_BluefruitLE_SPI(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 };
 
 #endif  // _CREATURE_H_
