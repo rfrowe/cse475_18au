@@ -2,7 +2,7 @@
 #include "State.h"
 
 State::State(Creature& creature, char* const name) : _creature(creature) {
-  strncpy(_name, name, 16);
+  strncpy(_name, name, MAX_NAME_LEN);
 };
 
 char* State::getName() {
