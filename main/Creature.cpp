@@ -75,6 +75,7 @@ void Creature::loop() {
     _PIR = newPIR;
   } else if (!newPIR && _PIR) {
     // Falling edge
+    dprintln("PIR reset");
     _PIR = newPIR;
   }
 }
