@@ -20,7 +20,7 @@ inline float getBatteryVoltage() {
 Creature::Creature() {
   // Initialize _next to be the Wait state, so we will immediately transition into it on the first loop.
   _next = new Wait(*this);
-  _state = nullptr;
+  _prev = _state = nullptr;
 
   if (KIT_NUM < 0) {
     Serial.print(F("Invalid kit number: "));
@@ -157,7 +157,7 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
     dprint(F("\tCYCLE_TIME: ")); dprintln(GLOBALS.CYCLE_TIME);
   }
 
-
+  // Handle changes in num creatures.
   if (old.NUM_CREATURES != GLOBALS.NUM_CREATURES) {
     dprint(F("Resizing creature arrays from "));
     dprint(old.NUM_CREATURES);
@@ -170,6 +170,11 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
     // Parens zero initialize.
     _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
     _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES + 1]();
+  }
+
+  // Handle change in tx power.
+  if (old.TX_POWER != GLOBALS.TX_POWER) {
+    _rf69.setTxPower(GLOBALS.TX_POWER, true);
   }
 
   return true;
@@ -307,11 +312,17 @@ void Creature::_transition(State* const state) {
   _state = state;
 
   if (state != old) {
+    if (_prev != nullptr) {
+      // We can now release the _prev, we don't need it anymore since we have a new prev.
+      delete _prev;
+    }
+
     if (old != nullptr) {
-      delete old;
       _txSendState(old->getId(), state->getId());
+      _prev = old;
     } else {
       _txSendState(0, state->getId());
+      _prev = nullptr;
     }
   }
 

@@ -200,8 +200,8 @@ class Creature {
   /** Measures battery voltage and updates OLED. */
   void _updateDisplay();
 
-  /** Current and next state, or null if no next state. */
-  State *_state, *_next;
+  /** Current, next, and previous states, or null if no next state. */
+  State *_state, *_next, *_prev;
 
   uint8_t _kitNum, _addr;
 
