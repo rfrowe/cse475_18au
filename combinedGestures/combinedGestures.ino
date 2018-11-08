@@ -18,7 +18,7 @@
 // On Metro M4: 3, 6, 8, 11, A3 and MOSI
 #define PIN         A5
 #define NUM_PIXELS 16
-#define GESTURE 2 // 0: startle gesture, 1 : ambient gesture, 2: active gesture
+#define GESTURE 0 // 0: startle gesture, 1 : ambient gesture, 2: active gesture
 /****CHANGE THE GESTURE NUMBER TO TEST OUT EACH GESTURE****/
 
 Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
