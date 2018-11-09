@@ -3,6 +3,7 @@
 #include "State.h"
 #include "Wait.h"
 #include "Midi.h"
+#include "Neopixel.h"
 
 #include <cmath>
 
@@ -80,6 +81,8 @@ void Creature::loop() {
     dprintln("PIR reset");
     _PIR = newPIR;
   }
+
+  Neopixel::loop();
 }
 
 bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, int8_t rssi) {
@@ -355,8 +358,7 @@ void Creature::_updateDisplay() {
   oled.print(F("Sound: "));
   oled.print(Midi::getSound());
 
-  // TODO(rfrowe): update with real light index, when added
-  uint8_t lightIdx = -1;
+  uint8_t lightIdx = Neopixel::getLight();
   oled.setCursor((OLED_WIDTH - 8 - (lightIdx > 9) - (lightIdx > 99)) * 6, 22);
   oled.print(F("Light: "));
   oled.print(lightIdx);
@@ -380,9 +382,7 @@ void Creature::setup() {
   oled.setBatteryVisible(true);
   _updateDisplay();
 
-  strip.begin();
-  strip.setBrightness(5);
-  strip.show();
+  Neopixel::setup();
 
   pinMode(RFM69_RST, OUTPUT);
   digitalWrite(RFM69_RST, LOW);

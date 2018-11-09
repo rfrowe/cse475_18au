@@ -1,14 +1,17 @@
 #include "Wait.h"
+#include "Neopixel.h"
 #include "Debug.h"
 
 constexpr uint8_t Wait::_localWeights[];
 
 uint8_t Wait::getNumRepeats() {
- return 255;
+ return 32;
 }
 
 State* Wait::transition() {
- return this;
+  Midi::setSound(Midi::getSound() ? 0 : 1);
+  Neopixel::setLight(Neopixel::getLight() ? 0 : 1);
+  return this;
 }
 
 uint8_t Wait::getId() {

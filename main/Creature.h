@@ -4,7 +4,6 @@
 #include <cinttypes>
 
 #include <Adafruit_FeatherOLED.h>
-#include <Adafruit_NeoPixel_ZeroDMA.h>
 #include <RH_RF69.h>
 #include <Wire.h>
 
@@ -18,9 +17,6 @@ class State;
 #define PIR_PIN A1
 #define VBAT_PIN A7
 #define LED_PIN 13
-
-#define NEOPIXEL_PIN 19
-#define NEOPIXEL_COUNT 16
 
 #define OLED_WIDTH 21 // chars
 
@@ -60,7 +56,6 @@ class Creature {
   ~Creature();
 
   Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
-  Adafruit_NeoPixel_ZeroDMA strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
   struct Globals GLOBALS = {
     /* TX_POWER */                  14,   // uint16_t
     /* STARTLE_RAND_MIN */          100,  // uint8_t
