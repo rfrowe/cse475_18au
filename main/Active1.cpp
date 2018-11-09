@@ -4,16 +4,11 @@
 constexpr uint8_t Active1::_localWeights[];
 
 uint8_t Active1::getNumRepeats() {
- return 255;
-}
-
-State* Active1::transition() {
- State::transition();
-// return this;
+ return rand()%4 + 4;
 }
 
 uint8_t Active1::getId() {
-  return 0;
+  return 2;
 }
 
 void Active1::loop(uint32_t dt) {

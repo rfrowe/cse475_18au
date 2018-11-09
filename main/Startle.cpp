@@ -7,16 +7,11 @@
 constexpr uint8_t Startle::_localWeights[];
 
 uint8_t Startle::getNumRepeats() {
- return 255;
-}
-
-State* Startle::transition() {
- State::transition();
-// return this;
+ return rand()%4 + 4;
 }
 
 uint8_t Startle::getId() {
-  return 0;
+  return 255;
 }
 
 void Startle::loop(uint32_t dt) {

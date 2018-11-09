@@ -4,16 +4,11 @@
 constexpr uint8_t Ambient2::_localWeights[];
 
 uint8_t Ambient2::getNumRepeats() {
- return 255;
-}
-
-State* Ambient2::transition() {
- State::transition();
-// return this;
+ return rand()%4 + 4;
 }
 
 uint8_t Ambient2::getId() {
-  return 0;
+  return 3;
 }
 
 void Ambient2::loop(uint32_t dt) {
