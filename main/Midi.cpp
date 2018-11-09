@@ -2,22 +2,17 @@
 
 #include <Adafruit_GFX.h>
 
-// Define your new Midi sounds here! Make sure to add them to the header and Midi::SOUNDS.
-Sound Midi::SCALE(
-  VS1053_BANK_MELODY,
-  VS1053_GM1_CELLO,
-  127,
-  true,
-  8,
-  (uint8_t[]){64, 66, 68, 70, 72, 74, 76, 78},
-  (uint8_t[]){50, 50, 50, 50, 50, 50, 50, 50}
-);
+void noteOn(uint8_t, uint8_t, uint8_t);
+void noteOff(uint8_t, uint8_t, uint8_t);
+void setInstrument(uint8_t, uint8_t);
+void setVolume(uint8_t, uint8_t);
+void setBank(uint8_t, uint8_t);
 
-Sound* Midi::SOUNDS[2] = {nullptr, &Midi::SCALE};
+constexpr Sound* Midi::SOUNDS[];
 
 // Set default sound to none.
-uint8_t Midi::currentIdx = 0;
-Sound* Midi::current = Midi::SOUNDS[Midi::currentIdx];
+uint8_t Midi::_currentIdx = 0;
+Sound* Midi::_current = Midi::SOUNDS[Midi::_currentIdx];
 
 bool gestFlag = false;
 bool noteFlag = false;
@@ -25,7 +20,7 @@ bool noteFlag = false;
 uint8_t noteIdx = 0;
 uint8_t duration = 0;
 
-void midiNoteOn(uint8_t chan, uint8_t n, uint8_t vel) {
+void noteOn(uint8_t chan, uint8_t n, uint8_t vel) {
   if (chan > 15) return;
   if (n > 127) return;
   if (vel > 127) return;
@@ -35,7 +30,7 @@ void midiNoteOn(uint8_t chan, uint8_t n, uint8_t vel) {
   VS1053_MIDI.write(vel);
 }
 
-void midiNoteOff(uint8_t chan, uint8_t n, uint8_t vel) {
+void noteOff(uint8_t chan, uint8_t n, uint8_t vel) {
   if (chan > 15) return;
   if (n > 127) return;
   if (vel > 127) return;
@@ -45,7 +40,7 @@ void midiNoteOff(uint8_t chan, uint8_t n, uint8_t vel) {
   VS1053_MIDI.write(vel);
 }
 
-void midiSetInstrument(uint8_t chan, uint8_t inst) {
+void setInstrument(uint8_t chan, uint8_t inst) {
   if (chan > 15) return;
   inst --; // page 32 has instruments starting with 1 not 0 :(
   if (inst > 127) return;
@@ -54,7 +49,7 @@ void midiSetInstrument(uint8_t chan, uint8_t inst) {
   VS1053_MIDI.write(inst);
 }
 
-void midiSetVolume(uint8_t chan, uint8_t vol) {
+void setVolume(uint8_t chan, uint8_t vol) {
   if (chan > 15) return;
   if (vol > 127) return;
 
@@ -63,7 +58,7 @@ void midiSetVolume(uint8_t chan, uint8_t vol) {
   VS1053_MIDI.write(vol);
 }
 
-void midiSetBank(uint8_t chan, uint8_t bank) {
+void setBank(uint8_t chan, uint8_t bank) {
   if (chan > 15) return;
   if (bank > 127) return;
 
@@ -120,26 +115,36 @@ void Midi::setSound(uint8_t soundIdx) {
   noInterrupts();
 
   // Constrain soundIdx. Anything outside of the bounds of the array is 0.
-  if (soundIdx > sizeof(SOUNDS) / sizeof(void*)) {
-    soundIdx = -1;
+  if (soundIdx >= sizeof(SOUNDS) / sizeof(void*)) {
+    soundIdx = 0;
   }
 
-  if (current != SOUNDS[soundIdx]) {
-    if (current != nullptr && noteFlag) {
-      midiNoteOff(0, current->notes[noteIdx], current->volume);
+  if (_current != SOUNDS[soundIdx]) {
+    if (_current != nullptr && noteFlag) {
+      noteOff(0, _current->notes[noteIdx], _current->volume);
       noteFlag = false;
     }
 
-    currentIdx = soundIdx;
-    current = SOUNDS[soundIdx];
+    _currentIdx = soundIdx;
+    _current = SOUNDS[soundIdx];
 
-    if (current == nullptr) {
+    if (_current == nullptr) {
       noteFlag = false;
       gestFlag = false;
     }
   }
 
   interrupts();
+}
+
+uint8_t Midi::getSound() {
+  return _currentIdx;
+}
+
+void Midi::setup() {
+  VS1053_MIDI.begin(31250);
+  Midi::tcConfigure(1000);  // Hz
+  Midi::tcStartCounter();
 }
 
 //Reset TC5
@@ -155,34 +160,34 @@ void tcDisable() {
   while (tcIsSyncing());
 }
 
-void TC5_Handler (void) {
-  if (Midi::current != nullptr) {
+void TC5_Handler(void) {
+  if (Midi::_current != nullptr) {
     if (!gestFlag) {
-      midiSetVolume(0, Midi::current->volume);
-      midiSetBank(0, Midi::current->bank);
-      midiSetInstrument(0, Midi::current->instrument);
+      setVolume(0, Midi::_current->volume);
+      setBank(0, Midi::_current->bank);
+      setInstrument(0, Midi::_current->instrument);
       noteIdx = 0;
       gestFlag = true;
     }
 
     if (!noteFlag) {
-      if (noteIdx == Midi::current->len) {
-        if (!Midi::current->loop) {
+      if (noteIdx == Midi::_current->len) {
+        if (!Midi::_current->loop) {
           gestFlag = false;
-          Midi::current = nullptr;
+          Midi::_current = nullptr;
           return;
         }
 
         noteIdx = 0;
       }
 
-      duration = Midi::current->durations[noteIdx];
-      midiNoteOn(0, Midi::current->notes[noteIdx], Midi::current->volume);
+      duration = Midi::_current->durations[noteIdx];
+      noteOn(0, Midi::_current->notes[noteIdx], Midi::_current->volume);
       noteFlag = true;
     }
 
     if (!--duration) {
-      midiNoteOff(0, Midi::current->notes[noteIdx], Midi::current->volume);
+      noteOff(0, Midi::_current->notes[noteIdx], Midi::_current->volume);
       noteFlag = false;
       noteIdx++;
     }

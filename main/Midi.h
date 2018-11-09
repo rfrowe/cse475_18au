@@ -36,10 +36,29 @@ bool tcIsSyncing();
 class Midi {
  public:
   // More to come, add your sounds here!
-  static Sound SCALE;
+  static Sound scale;
+  static Sound bbwa;
+  static Sound junco;
+  static Sound cardinal;
+  static Sound bpwa;
+  static Sound brcr;
+  static Sound oriole;
+  static Sound osprey;
+  static Sound oven;
+  static Sound songspar;
+  static Sound towhee;
+  static Sound tuftedti;
+  static Sound veery;
+  static Sound whthsprw;
+  static Sound indigobu;
+  static Sound mowa;
+  static Sound wiwa;
 
   /** Array of all sounds, in a fixed order, used to assign an index to each. Add your sounds to this! */
-  static Sound* SOUNDS[2];
+  static constexpr Sound *SOUNDS[] =
+      {nullptr, &Midi::scale, &Midi::bbwa, &Midi::bpwa, &Midi::brcr, &Midi::cardinal, &Midi::indigobu, &Midi::junco,
+       &Midi::mowa, &Midi::oriole, &Midi::osprey, &Midi::oven, &Midi::songspar, &Midi::towhee, &Midi::tuftedti,
+       &Midi::veery, &Midi::whthsprw, &Midi::wiwa};
 
   /**
    * Use this to set the current sound gesture.
@@ -48,10 +67,19 @@ class Midi {
    */
   static void setSound(uint8_t soundIdx);
 
-  /** Current sound being played. Please do not change this value directly. Use Midi::setSound(int16_t) */
-  static Sound* current;
-  static uint8_t currentIdx;
-  
+  /**
+   * @returns the index of the current sound gesture.
+   */
+  static uint8_t getSound();
+
+  static void setup();
+
+  /** Current sound being played. */
+  static Sound *_current;
+ private:
+  /** Index of current sound being played. */
+  static uint8_t _currentIdx;
+
   static void tcStartCounter();
   static void tcConfigure(int frequencyHz);
 };

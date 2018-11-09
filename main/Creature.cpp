@@ -353,7 +353,7 @@ void Creature::_updateDisplay() {
 
   oled.setCursor(0, 22);
   oled.print(F("Sound: "));
-  oled.print(Midi::currentIdx);
+  oled.print(Midi::getSound());
 
   // TODO(rfrowe): update with real light index, when added
   uint8_t lightIdx = -1;
@@ -407,10 +407,7 @@ void Creature::setup() {
   Serial.print(RFM69_FREQ);
   Serial.println(F("MHz"));
 
-  // Setup MIDI
-  VS1053_MIDI.begin(31250);
-  Midi::tcConfigure(1000);  // Hz
-  Midi::tcStartCounter();
+  Midi::setup();
 
   pinMode(PIR_PIN, INPUT);
   _PIR = digitalRead(PIR_PIN);
