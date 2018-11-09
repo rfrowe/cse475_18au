@@ -43,7 +43,7 @@ void State::PIR() {
 }
 
 void State::startled() {
-  // TOOD: implement
+  // TODO: implement
 }
 
 int8_t* State::getGlobalWeights() {
