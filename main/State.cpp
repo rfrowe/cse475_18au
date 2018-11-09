@@ -38,6 +38,10 @@ State* State::transition() {
   // TODO: implement
 }
 
+void State::PIR() {
+  // TODO: implement
+}
+
 void State::startled() {
   // TOOD: implement
 }

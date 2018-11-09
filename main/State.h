@@ -74,7 +74,7 @@ class State {
   /**
    * Called when PIR pin goes from LOW to HIGH.
    */
-  virtual void PIR() = 0;
+  virtual void PIR();
  protected:
   // Packet transmitters
   /**
