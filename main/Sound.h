@@ -19,13 +19,25 @@ class Sound {
         const uint8_t duration_offset = 0) :
       bank(bank), instrument(instrument), volume(volume), loop(loop), len(len),
       transpose(transpose), duration_offset(duration_offset),
-      notes(notes), durations(durations) {}
-  Sound(const Sound&) = delete;
-  Sound& operator=(Sound const&) = delete;
+      notes(new uint8_t[bank]), durations(new uint8_t[bank]) {
+    // Copy in notes and durations with offsets
+    for (uint8_t i = 0; i < len; i++) {
+      this->notes[i] = OVERFLOW_ADD(notes[i], transpose);
+      this->durations[i] = OVERFLOW_ADD(durations[i], duration_offset);
+    }
+  }
+
+  ~Sound() {
+    delete[] notes;
+    delete[] durations;
+  }
+
+  Sound(const Sound &) = delete;
+  Sound &operator=(Sound const &) = delete;
 
   const uint8_t bank, instrument, volume, len, transpose, duration_offset;
   const bool loop;
-  const uint8_t * const notes, * const durations;
+  uint8_t *notes, *durations;
 };
 
 #endif  // _SOUND_H_
