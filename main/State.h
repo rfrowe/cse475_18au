@@ -63,7 +63,7 @@ class State {
    * is inversely proportional to the number of creatures currently in M. For positive weights, groups of creatures will tend to transition to M.
    * For negative weights, only a few creatures will be in M at the same time.
    */
-  virtual uint8_t* getGlobalWeights();
+  virtual int8_t* getGlobalWeights();
 
   /**
    * @returns This state's startle factor. A value of 1 represents no alteration to the creature's regular threshold.
@@ -132,7 +132,7 @@ class State {
   /** Reference to the creature this is a state in */
   Creature& _creature;
 
-  uint8_t _globalWeights[ACTIVE_STATES + AMBIENT_STATES] = { 0 };
+  int8_t _globalWeights[ACTIVE_STATES + AMBIENT_STATES] = { 0 };
  private:
   char _name[MAX_NAME_LEN + 1];
 };

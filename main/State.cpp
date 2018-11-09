@@ -46,6 +46,6 @@ void State::startled() {
   // TOOD: implement
 }
 
-uint8_t* State::getGlobalWeights() {
+int8_t* State::getGlobalWeights() {
   return _globalWeights;
 }
