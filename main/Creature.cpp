@@ -188,12 +188,13 @@ void Creature::_rxStop() {
 }
 
 bool Creature::_rxStart(uint8_t len, uint8_t* payload) {
-  if (len != 1) {
+  if (len != 2) {
     Serial.print(F("Start packet has invalid payload length: "));
     Serial.println(len);
     return false;
   }
   uint8_t mode = payload[0];
+  uint8_t stateId = payload[1];
   // TODO: implement
   return true;
 }
