@@ -75,7 +75,7 @@ class State {
    * Called when PIR pin goes from LOW to HIGH.
    */
   virtual void PIR();
- protected:
+
   // Packet transmitters
   /**
    * Transmit a startle packet.
@@ -106,6 +106,8 @@ class State {
    * @param payload Should be the startle strength and id.
    */
   virtual bool rxStartle(int8_t rssi, uint8_t len, uint8_t* payload);
+  
+ protected:
 
   // Event handlers
   /**
