@@ -318,9 +318,10 @@ void Creature::_transition(State* const state) {
   }
 
   State* const old = _state;
-  _state = state;
 
   if (old == nullptr || state->getId() != old->getId()) {
+    _state = state;
+
     if (_prev != nullptr && _prev != state) {
       // Delete the current _prev if it's not null, and it's not what we're currently transitioning to.
       delete _prev;
