@@ -312,22 +312,25 @@ void Creature::_pollRadio() {
 }
 
 void Creature::_transition(State* const state) {
+  if (state == nullptr) {
+    Serial.println("Cannot transition to null state!");
+    return;
+  }
+
   State* const old = _state;
   _state = state;
 
-  if (state != old) {
-    if (_prev != nullptr) {
-      // We can now release the _prev, we don't need it anymore since we have a new prev.
+  if (old == nullptr || state->getId() != old->getId()) {
+    if (_prev != nullptr && _prev != state) {
+      // Delete the current _prev if it's not null, and it's not what we're currently transitioning to.
       delete _prev;
     }
 
-    if (old != nullptr) {
-      _txSendState(old->getId(), state->getId());
-      _prev = old;
-    } else {
-      _txSendState(0, state->getId());
-      _prev = nullptr;
-    }
+    _txSendState(old == nullptr ? 0 : old->getId(), state->getId());
+    _prev = old;
+  } else if (state != old){
+    // No need to transition, free this memory if it is not the same state.
+    delete state;
   }
 
   _remainingRepeats = _state->getNumRepeats();
