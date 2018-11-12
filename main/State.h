@@ -111,10 +111,13 @@ class State {
 
   // Event handlers
   /**
-   * Called when this creature is successfully startled. Should set the _creature's
-   * _next state to the startle state.
+   * Called when this creature is successfully startled. Should test strength vs threshold and possibly enter
+   * startle state and tx a startle packet.
+   *
+   * @param strength    Strength of the startle (higher is stronger).
+   * @param id  Unique identifier for this startle to avoid duplicates.
    */
-  virtual void startled();
+  virtual void startled(uint8_t strength, uint8_t id);
 
 
   /**

@@ -46,7 +46,7 @@ void State::PIR() {
   // TODO: implement
 }
 
-void State::startled() {
+void State::startled(uint8_t strength, uint8_t id) {
   // TODO: implement
 }
 

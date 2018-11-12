@@ -32,4 +32,4 @@ void Wait::PIR() {
   dprintln("PIR triggered!");
 }
 
-void Wait::startled() {}
+void Wait::startled(uint8_t strength, uint8_t id) {}
