@@ -12,7 +12,7 @@ class Creature;
 
 class State {
  public:
-  State(Creature& creature, char* const name);
+  State(Creature& creature, char* const name, const uint8_t id);
   State(const State&) = delete;
 
   /**
@@ -41,7 +41,7 @@ class State {
   /**
    * @returns the id of this state from 0x00 to 0xFF.
    */
-  virtual uint8_t getId() = 0;
+  virtual uint8_t getId();
 
   /**
    * @returns name of this state, capped to 12 chars.
@@ -137,6 +137,7 @@ class State {
   int8_t _globalWeights[ACTIVE_STATES + AMBIENT_STATES] = { 0 };
  private:
   char _name[MAX_NAME_LEN + 1];
+  uint8_t _id;
 };
 
 #endif  // _STATE_H_

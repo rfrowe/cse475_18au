@@ -320,6 +320,11 @@ void Creature::_transition(State* const state) {
   State* const old = _state;
 
   if (old == nullptr || state->getId() != old->getId()) {
+    Serial.print("Transitioning from state ");
+    Serial.print(old == nullptr ? -1 : old->getId());
+    Serial.print(" to ");
+    Serial.println(state->getId());
+
     _state = state;
 
     if (_prev != nullptr && _prev != state) {

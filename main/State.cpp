@@ -1,10 +1,14 @@
 #include "Creature.h"
 #include "State.h"
 
-State::State(Creature& creature, char* const name) : _creature(creature) {
+State::State(Creature& creature, char* const name, const uint8_t id) : _creature(creature), _id(id) {
   strncpy(_name, name, MAX_NAME_LEN);
   _name[MAX_NAME_LEN] = 0;
 };
+
+uint8_t State::getId() {
+  return _id;
+}
 
 char* State::getName() {
   return _name;
