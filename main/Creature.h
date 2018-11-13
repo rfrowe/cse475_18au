@@ -154,7 +154,7 @@ class Creature {
   /**
    *  Starts the creature by transitioning to the next appropriate state baseed on mode.
    *
-   *  @params payload  Should be mode to start in. 0x8XXX for continue, 0x0000 for random start, 0x00XX for state XX.
+   *  @params payload  Should be start mode and state. Mode 0x01 for continue from _prev, 0x00 for starting at the given state ID.
    */
   bool _rxStart(uint8_t len, uint8_t* payload);
 
