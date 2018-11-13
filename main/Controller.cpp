@@ -26,7 +26,7 @@ void Controller::loop(uint32_t dt) {
 }
 
 bool Controller::txStates() {
-  return _creature.tx(5, 0xFF, _creature.GLOBALS.NUM_CREATURES + 1, _creature.getCreatureStates());
+  return _creature.tx(5, 0xFF, _creature.GLOBALS.NUM_CREATURES, _creature.getCreatureStates() + 1);
 }
 
 bool Controller::txGlobals() {

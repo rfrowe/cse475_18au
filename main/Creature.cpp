@@ -98,9 +98,11 @@ void Creature::_processCommand() {
         uint8_t dst = (uint8_t) Serial.parseInt();
         if (dst > 0) {
           Serial.readStringUntil(' ');
-          uint16_t mode = (uint16_t) _get_int();
+          uint8_t mode = (uint8_t) _get_int();
+          uint8_t state = (uint8_t) _get_int();
           uint8_t pld[2];
-          memcpy(pld, &mode, sizeof(uint16_t));
+          pld[0] = mode;
+          pld[1] = state;
           bool res = tx(2, dst, 2, pld);
 
           if (!res) {
@@ -111,7 +113,9 @@ void Creature::_processCommand() {
             Serial.print(dst);
           }
           Serial.print(" with mode 0x");
-          Serial.println(mode, HEX);
+          Serial.print(mode, HEX);
+          Serial.print(" and state");
+          Serial.println(state, HEX);
           Serial.println();
         }
       }
@@ -281,8 +285,8 @@ void Creature::_processCommand() {
       Serial.println("stop <creature number>");
       Serial.println("   Stops the given creature\n");
 
-      Serial.println("start <creature number> <mode>");
-      Serial.println("   Starts the given creature into the given mode (0x0000 for random, 0x8XXX for continue)\n");
+      Serial.println("start <creature number> <mode> <state>");
+      Serial.println("   Starts the given creature into the given mode (0x00 for specified state, 0x01 for continue) and state (0x00 for random)\n");
 
       Serial.println("sound <creature number> <sound number>");
       Serial.println("   Commands the given creature to play the specified sound\n");
