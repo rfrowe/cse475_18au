@@ -6,7 +6,7 @@
 
 class Wait : public State {
  public:
-  Wait(Creature& creature) : State(creature, "Wait", 0) {}
+  Wait(Creature& creature) : State(creature, "Wait", WAIT) {}
   uint8_t getNumRepeats();
   State* transition() override;
   void loop(uint32_t dt);

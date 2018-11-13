@@ -330,6 +330,10 @@ void Creature::_transition(State* const state) {
     Serial.print(" to ");
     Serial.println(state->getId());
 
+    if (_state->getId() != WAIT && _state->getId() != STARTLE) {
+      updatedThreshold();
+    }
+    
     _state = state;
 
     if (_prev != nullptr && _prev != state) {

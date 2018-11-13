@@ -36,6 +36,9 @@ class State;
 #define PID_STARTLE 0x6
 #define PID_SEND_STATE 0x7
 
+#define WAIT 0
+#define STARTLE 255
+
 struct Globals {
   uint16_t TX_POWER;
   uint8_t STARTLE_RAND_MIN;
