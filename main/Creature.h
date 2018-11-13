@@ -109,7 +109,7 @@ class Creature {
     return _lastStartle;
   }
 
-  void setLastStartlee(uint32_t lastStartle) {
+  void setLastStartle(uint32_t lastStartle) {
     _lastStartle = lastStartle;
   }
 
