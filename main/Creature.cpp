@@ -81,7 +81,7 @@ void Creature::_processCommand() {
       if (Serial.available()) {
         uint8_t dst = (uint8_t) Serial.parseInt();
         if (dst > 0) {
-          bool res = tx(1, dst, 0, nullptr);
+          bool res = tx(1, _addr, dst, 0, nullptr);
 
           if (!res) {
             Serial.print("ERROR ");
@@ -103,7 +103,7 @@ void Creature::_processCommand() {
           uint8_t pld[2];
           pld[0] = mode;
           pld[1] = state;
-          bool res = tx(2, dst, 2, pld);
+          bool res = tx(2, _addr, dst, 2, pld);
 
           if (!res) {
             Serial.print("ERROR ");
@@ -125,7 +125,7 @@ void Creature::_processCommand() {
         if (dst > 0) {
           Serial.readStringUntil(' ');
           uint8_t sound = (uint8_t) _get_int();
-          bool res = tx(3, dst, 1, &sound);
+          bool res = tx(3, _addr, dst, 1, &sound);
 
           if (!res) {
             Serial.print("ERROR ");
@@ -146,7 +146,7 @@ void Creature::_processCommand() {
           Serial.readStringUntil(' ');
           uint8_t effect = (uint8_t) _get_int();
 
-          bool res = tx(3, dst, 1, &effect);
+          bool res = tx(3, _addr, dst, 1, &effect);
 
           if (!res) {
             Serial.print("ERROR ");
@@ -211,6 +211,7 @@ void Creature::_processCommand() {
       }
     } else if (str.equals("packet")) {
       if (Serial.available()) {
+        uint8_t src = (uint8_t) Serial.parseInt();
         uint8_t dst = (uint8_t) Serial.parseInt();
         Serial.readStringUntil(' ');
         Serial.println(RH_RF69_MAX_MESSAGE_LEN);
@@ -223,10 +224,10 @@ void Creature::_processCommand() {
           sz++;
         }
 
-        bool res = tx(pid, dst, sz, pld);
+        bool res = tx(pid, src, dst, sz, pld);
       }
     } else if (str.equals("update")) {
-       tx(0, 0xFF, sizeof(GLOBALS), (uint8_t*)&GLOBALS);
+       tx(0, _addr, 0xFF, sizeof(GLOBALS), (uint8_t*)&GLOBALS);
     } else if (str.equals("states")) {
       unsigned long now = millis();
       for (int i = 1; i < GLOBALS.NUM_CREATURES + 1; i++) {
@@ -422,7 +423,7 @@ bool Creature::_rxBroadcastStates(uint8_t len, uint8_t* payload) {
   return true;
 }
 
-bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, uint8_t* const payload) {
+bool Creature::tx(const uint8_t pid, const uint8_t src_addr, const uint8_t dst_addr, const uint8_t len, uint8_t* const payload) {
   if (len + 3 > RH_RF69_MAX_MESSAGE_LEN) {
     Serial.print(F("Packet length "));
     Serial.print(len);
@@ -433,7 +434,7 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
   }
 
   _buf[0] = pid;
-  _buf[1] = _addr;
+  _buf[1] = src_addr;
   _buf[2] = dst_addr;
   memcpy(_buf + 3, payload, len);
 
@@ -472,7 +473,7 @@ bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, 
 
 void Creature::_txSendState(uint8_t oldState, uint8_t newState) {
   uint8_t payload[] = {oldState, newState};
-  tx(PID_SEND_STATE, CONTROLLER_ADDR, sizeof(payload), payload);
+  tx(PID_SEND_STATE, _addr, CONTROLLER_ADDR, sizeof(payload), payload);
 }
 
 void Creature::_receiveState(uint8_t src, uint8_t st) {

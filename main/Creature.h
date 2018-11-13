@@ -95,7 +95,7 @@ class Creature {
    * @param payload An array of bytes to use as the payload.
    * @returns true iff the packet was successfully sent, false otherwise.
    */
-  bool tx(const uint8_t pid, const uint8_t dstAddr, const uint8_t len, uint8_t* const payload);
+  bool tx(const uint8_t pid, const uint8_t src, const uint8_t dstAddr, const uint8_t len, uint8_t* const payload);
 
   /**
    * Sets the next state to transition into. If this is set, the next loop will trigger

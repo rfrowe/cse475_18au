@@ -26,11 +26,11 @@ void Controller::loop(uint32_t dt) {
 }
 
 bool Controller::txStates() {
-  return _creature.tx(5, 0xFF, _creature.GLOBALS.NUM_CREATURES, _creature.getCreatureStates() + 1);
+  return _creature.tx(5, _creature.getAddr(), 0xFF, _creature.GLOBALS.NUM_CREATURES, _creature.getCreatureStates() + 1);
 }
 
 bool Controller::txGlobals() {
-  return _creature.tx(0, 0xFF, sizeof(_creature.GLOBALS), (uint8_t*)&_creature.GLOBALS);
+  return _creature.tx(0, _creature.getAddr(), 0xFF, sizeof(_creature.GLOBALS), (uint8_t*)&_creature.GLOBALS);
 }
 
 const uint8_t* Controller::getLocalWeights() {
