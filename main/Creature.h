@@ -129,6 +129,8 @@ class Creature {
     return _creatureDistances;
   }
 
+  uint8_t updatedThreshold();
+
   // Run after construction but before loop.
   void setup();
 

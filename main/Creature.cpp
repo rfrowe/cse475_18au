@@ -126,6 +126,11 @@ void Creature::_updateDistance(uint8_t addr, int8_t rssi) {
   // TODO: implement
 }
 
+uint8_t Creature::updatedThreshold() {
+  setStartleThreshold((uint8_t) round(getStartleThreshold() - getStartleThreshold() * (millis() - getLastStartle()) * _state->getStartleFactor() * GLOBALS.STARTLE_THRESHOLD_DECAY));
+  setLastStartle(millis());
+}
+
 bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
   if (len != sizeof(struct Globals)) {
     Serial.print(F("Received SetGlobals payload of length "));
