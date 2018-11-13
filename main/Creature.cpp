@@ -211,11 +211,10 @@ void Creature::_processCommand() {
       }
     } else if (str.equals("packet")) {
       if (Serial.available()) {
+        uint8_t pid = (uint8_t) Serial.parseInt();
         uint8_t src = (uint8_t) Serial.parseInt();
         uint8_t dst = (uint8_t) Serial.parseInt();
         Serial.readStringUntil(' ');
-        Serial.println(RH_RF69_MAX_MESSAGE_LEN);
-        uint8_t pid = _get_int();
         
         uint8_t pld[RH_RF69_MAX_MESSAGE_LEN];
         uint8_t sz = 0;
@@ -448,7 +447,7 @@ bool Creature::tx(const uint8_t pid, const uint8_t src_addr, const uint8_t dst_a
   Serial.print(F(" bytes to address "));
   Serial.print(dst_addr);
   Serial.print(F(" from address "));
-  Serial.println(_addr);
+  Serial.println(src_addr);
 
   for (uint8_t* i = &_buf[3]; i < &_buf[len + 3]; i++) {
     if (*i < 16) {
