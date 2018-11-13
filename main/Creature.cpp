@@ -10,7 +10,7 @@
 // TODO: put your kit number here
 #define KIT_NUM 0
 
-#define VERSION "1.4"
+#define VERSION "1.5"
 
 // Returns current battery voltage
 inline float getBatteryVoltage() {
@@ -126,7 +126,7 @@ void Creature::_updateDistance(uint8_t addr, int8_t rssi) {
   // TODO: implement
 }
 
-uint8_t Creature::updatedThreshold() {
+uint8_t Creature::updateThreshold() {
   setStartleThreshold((uint8_t) round(getStartleThreshold() - getStartleThreshold() * (millis() - getLastStartle()) * _state->getStartleFactor() * GLOBALS.STARTLE_THRESHOLD_DECAY));
   setLastStartle(millis());
 }
@@ -330,8 +330,8 @@ void Creature::_transition(State* const state) {
     Serial.print(" to ");
     Serial.println(state->getId());
 
-    if (_state->getId() != WAIT && _state->getId() != STARTLE) {
-      updatedThreshold();
+    if (state->getId() != WAIT && state->getId() != STARTLE) {
+      updateThreshold();
     }
     
     _state = state;
