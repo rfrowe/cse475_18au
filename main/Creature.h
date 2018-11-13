@@ -113,6 +113,14 @@ class Creature {
     _lastStartle = lastStartle;
   }
 
+  uint8_t getStartleThreshold() {
+    return _startleThreshold;
+  }
+
+  void setStartleThreshold(uint8_t thresh) {
+    _startleThreshold = thresh;
+  }
+
   uint8_t* getCreatureStates() {
     return _creatureStates;
   }
