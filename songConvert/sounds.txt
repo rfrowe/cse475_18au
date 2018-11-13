@@ -187,6 +187,91 @@ Sound Midi::four_active2(
     0,
 );
 
+// group 5
+Sound Midi::five_ambient1(
+    VS1053_BANK_MELODY,
+    8,
+    127,
+    true,
+    8,
+    (uint8_t[]) {12, 24, 36, 48, 60, 72, 84, 96},
+    (uint8_t[]) {80, 80, 80, 80, 80, 80, 80, 80},
+    0,
+    0,
+);
+
+Sound Midi::five_ambient2(
+    VS1053_BANK_MELODY,
+    854,
+    127,
+    true,
+    8,
+    (uint8_t[]) {12, 24, 36, 48, 60, 72, 84, 96},
+    (uint8_t[]) {80, 80, 80, 80, 80, 80, 80, 80},
+    0,
+    0,
+);
+
+Sound Midi::five_ambient3(
+    VS1053_BANK_MELODY,
+    53,
+    127,
+    true,
+    8,
+    (uint8_t[]) {12, 24, 36, 48, 60, 72, 84, 96},
+    (uint8_t[]) {80, 80, 80, 80, 80, 80, 80, 80},
+    0,
+    0,
+);
+
+Sound Midi::five_active1(
+    VS1053_BANK_MELODY,
+    23,
+    127,
+    true,
+    8,
+    (uint8_t[]) {12, 36, 36, 24, 48, 48, 36, 36},
+    (uint8_t[]) {25, 25, 25, 25, 25, 25, 25, 25},
+    0,
+    0,
+);
+
+Sound Midi::five_active2(
+    VS1053_BANK_MELODY,
+    32,
+    127,
+    true,
+    8,
+    (uint8_t[]) {12, 36, 24, 60, 48, 84, 72, 96},
+    (uint8_t[]) {35, 45, 35, 45, 35, 45, 35, 45},
+    0,
+    0,
+);
+
+Sound Midi::five_active3(
+    VS1053_BANK_MELODY,
+    41,
+    127,
+    true,
+    8,
+    (uint8_t[]) {12, 36, 24, 60, 48, 84, 72, 96},
+    (uint8_t[]) {35, 45, 35, 45, 35, 45, 35, 45},
+    0,
+    0,
+);
+
+Sound Midi::five_startle(
+    VS1053_BANK_MELODY,
+    104,
+    127,
+    true,
+    8,
+    (uint8_t[]) {12, 24, 36, 48, 60, 72, 84, 96},
+    (uint8_t[]) {25, 25, 25, 25, 25, 25, 25, 25},
+    0,
+    0,
+);
+
 // group 6
 
 Sound Midi::six_startle(
