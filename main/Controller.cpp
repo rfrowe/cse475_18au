@@ -18,10 +18,12 @@ uint8_t Controller::getId() {
 int counter = 0;
 void Controller::loop(uint32_t dt) {
   
-  if (!(counter % 10)) {
+  if (!(counter % 50)) {
     txGlobals();
   }
-  txStates();
+  if (!(counter % 20)) {
+    txStates();
+  }
   counter++;
 }
 

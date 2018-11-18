@@ -40,7 +40,7 @@ class State;
 #define PID_STARTLE 0x6
 #define PID_SEND_STATE 0x7
 
-#define CONT_CYCLE_TIME 5000
+#define CONT_CYCLE_TIME 1000
 #define CLEAR_TIME 60000
 
 
