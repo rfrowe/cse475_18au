@@ -4,23 +4,19 @@
 #include <cinttypes>
 
 #include <Adafruit_FeatherOLED.h>
-#include <Adafruit_NeoPixel_ZeroDMA.h>
 #include <RH_RF69.h>
 #include <Wire.h>
 
-#include "Adafruit_BLE.h"
-#include "Adafruit_BluefruitLE_SPI.h"
+#include "Midi.h"
 
 class State;
 
 #define VREF 3.3
 
 #define ID_PIN A0
+#define PIR_PIN A1
 #define VBAT_PIN A7
 #define LED_PIN 13
-
-#define NEOPIXEL_PIN 19
-#define NEOPIXEL_COUNT 16
 
 #define OLED_WIDTH 21 // chars
 
@@ -40,15 +36,10 @@ class State;
 #define PID_STARTLE 0x6
 #define PID_SEND_STATE 0x7
 
-#define CONT_CYCLE_TIME 1000
-#define CLEAR_TIME 60000
+#define DISTANCE_ALPHA 0.65
+#define WAIT 0
+#define STARTLE 255
 
-
-#define BLUEFRUIT_SPI_CS      8
-#define BLUEFRUIT_SPI_IRQ     7
-#define BLUEFRUIT_SPI_RST     40
-
-static const uint8_t GLOBALS_LEN = 9;
 struct Globals {
   uint16_t TX_POWER;
   uint8_t STARTLE_RAND_MIN;
@@ -61,10 +52,6 @@ struct Globals {
   uint16_t CYCLE_TIME;
 };
 
-static const String GLOBALS_NAMES[GLOBALS_LEN] = {"TX_POWER", "STARTLE_RAND_MIN", "STARTLE_RAND_MAX", "STARTLE_MAX", "STARTLE_THRESHOLD", "STARTLE_DECAY", "NUM_CREATURES", "STARTLE_THRESHOLD_DECAY", "CYCLE_TIME"};
-
-static const uint8_t GLOBALS_OFFSETS[GLOBALS_LEN] = {0, 2, 3, 4, 5, 6, 7, 8, 12};
-
 class Creature {
  public:
   Creature();
@@ -73,7 +60,6 @@ class Creature {
   ~Creature();
 
   Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
-  Adafruit_NeoPixel_ZeroDMA strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRBW);
   struct Globals GLOBALS = {
     /* TX_POWER */                  14,   // uint16_t
     /* STARTLE_RAND_MIN */          100,  // uint8_t
@@ -81,9 +67,9 @@ class Creature {
     /* STARTLE_MAX */               255,  // uint8_t
     /* STARTLE_THRESHOLD */         150,  // uint8_t
     /* STARTLE_DECAY */             30,   // uint8_t
-    /* NUM_CREATURES */             30,   // uint8_t
-    /* STARTLE_THRESHOLD_DECAY */   0.9,  // float32
-    /* CYCLE_TIME */     /*ms*/     1000,  // uint16_t
+    /* NUM_CREATURES */             35,   // uint8_t
+    /* STARTLE_THRESHOLD_DECAY */   0.01,  // float32
+    /* CYCLE_TIME in ms */          1000,  // uint16_t
   };
 
   /**
@@ -95,7 +81,7 @@ class Creature {
    * @param payload An array of bytes to use as the payload.
    * @returns true iff the packet was successfully sent, false otherwise.
    */
-  bool tx(const uint8_t pid, const uint8_t src, const uint8_t dstAddr, const uint8_t len, uint8_t* const payload);
+  bool tx(const uint8_t pid, const uint8_t dstAddr, const uint8_t len, uint8_t* const payload);
 
   /**
    * Sets the next state to transition into. If this is set, the next loop will trigger
@@ -131,6 +117,14 @@ class Creature {
     _lastStartle = lastStartle;
   }
 
+  uint8_t getStartleThreshold() {
+    return _startleThreshold;
+  }
+
+  void setStartleThreshold(uint8_t thresh) {
+    _startleThreshold = thresh;
+  }
+
   uint8_t* getCreatureStates() {
     return _creatureStates;
   }
@@ -139,22 +133,17 @@ class Creature {
     return _creatureDistances;
   }
 
-    // Run after construction but before loop.
+  uint8_t updateThreshold();
+
+  // Run after construction but before loop.
   void setup();
 
   // Called during main loop.
   void loop();
+
+  State* getState(int id);
+
  private:
-  void _receiveState(uint8_t src, uint8_t st);
-
-  void _processCommand();
-
-  int _get_int();
-  
-  void _updateGlobals(uint8_t sizeOld, uint8_t sizeNew);
-
-  void _updateCreature(uint8_t id);
-
   /**
    * Called during loop to poll radio for new received packets. Calls Creature::rx with any
    * received packets that were intended for this creature.
@@ -182,7 +171,7 @@ class Creature {
   /**
    *  Starts the creature by transitioning to the next appropriate state baseed on mode.
    *
-   *  @params payload  Should be mode to start in. 0x8XXX for continue, 0x0000 for random start, 0x00XX for state XX.
+   *  @params payload  Should be start mode and state. Mode 0x01 for continue from _prev, 0x00 for starting at the given state ID.
    */
   bool _rxStart(uint8_t len, uint8_t* payload);
 
@@ -220,13 +209,11 @@ class Creature {
    */
   void _updateDistance(uint8_t addr, int8_t rssi);
 
-  /** Measures battery voltage and updates OLED */
+  /** Measures battery voltage and updates OLED. */
   void _updateDisplay();
 
-  void _initializeBluetooth();
-
-  /** Current and next state, or null if no next state */
-  State *_state, *_next;
+  /** Current, next, and previous states, or null if no next state. */
+  State *_state, *_next, *_prev;
 
   uint8_t _kitNum, _addr;
 
@@ -248,9 +235,6 @@ class Creature {
   /** State ids for all creatures 0 through NUM_CREATURES. Should be of size GLOBALS.NUM_CREATURES + 1 */
   uint8_t *_creatureStates;
 
-  /** Time of last communication with creature. 0 iff the creature is disconnected from the network (i.e. time since > CLEAR_TIME)*/
-  unsigned long *_creatureTimes;
-
   /** Running average of pseudodistance (RSSI) for all creatures 0 through NUM_CREATURES. Should be of size GLOBALS.NUM_CREATURES + 1 */
   int8_t *_creatureDistances;
 
@@ -262,9 +246,11 @@ class Creature {
 
   uint8_t _txCount, _rxCount;
 
+  /** Current battery voltage. */
   float _battery;
 
-  Adafruit_BluefruitLE_SPI _blu = Adafruit_BluefruitLE_SPI(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+  /** Last known state of the PIR sensor. Used for duplicate detection. */
+  bool _PIR;
 };
 
 #endif  // _CREATURE_H_

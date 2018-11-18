@@ -1,12 +1,23 @@
 #include "Creature.h"
 #include "Debug.h"
 #include "State.h"
-#include "Controller.h"
+#include "Wait.h"
+#include "Active1.h"
+#include "Active2.h"
+#include "Active3.h"
+#include "Ambient1.h"
+#include "Ambient2.h"
+#include "Ambient3.h"
+#include "Startle.h"
+#include "Midi.h"
+#include "Neopixel.h"
 
 #include <cmath>
 
 // TODO: put your kit number here
-#define KIT_NUM 0
+#define KIT_NUM 2
+
+#define VERSION "2.0"
 
 // Returns current battery voltage
 inline float getBatteryVoltage() {
@@ -15,345 +26,58 @@ inline float getBatteryVoltage() {
 }
 
 Creature::Creature() {
-  // Initialize _next to be the Controller state, so we will immediately transition into it on the first loop.
-  _next = new Controller(*this);
-  _state = nullptr;
+  // Initialize _next to be the Wait state, so we will immediately transition into it on the first loop.
+  _next = new Ambient1(*this);
+  _prev = _state = nullptr;
+
+  if (KIT_NUM < 0) {
+    Serial.print(F("Invalid kit number: "));
+    Serial.println();
+    while (1);
+  }
 
   pinMode(ID_PIN, INPUT_PULLUP);
-  _kitNum = 0;
-  _addr = 0;
+  _kitNum = KIT_NUM;
+  _addr = 2 * KIT_NUM  - digitalRead(ID_PIN);
 
   // Parens zero initialize
   _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
   _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES + 1]();
-  _creatureTimes = new unsigned long[GLOBALS.NUM_CREATURES + 1]();
-  
+
   _battery = getBatteryVoltage();
+  srand(_addr * (_battery * 100));
 
   _lastStartle = millis();
   _lastLoop = millis();
-
-//  Adafruit_BluefruitLE_SPI a = ;
-}
-
-int Creature::_get_int() {
-  String modeStr = Serial.available() ? Serial.readStringUntil(' ') : "00";
-  char modeCharStr[modeStr.length()];
-  modeStr.toCharArray(modeCharStr, modeStr.length() + 1);
-  
-  int i1 = (int) strtol(modeCharStr, NULL, 16);
-  int i2 = (int) strtol(modeCharStr, NULL, 0);
-
-  return i1 > i2 ? i1 : i2;
-}
-
-void Creature::_initializeBluetooth() {
-  if (!_blu.begin(false)) { // verbose
-    dprintln(F("Failed to intialize BLUEFRUIT module"));
-    while (1);
-  }
-  //_blu.echo(false);
-
-  /*if (!_blu.factoryReset()) {
-    dprintln(F("Could not factory reset"));
-    while (1);
-  }
-  Serial.print("D");
-  dprintln(F("BLUEFRUIT info:"));
-  //#ifdef DEBUG
-  _blu.info();
-  //#endif
-  Serial.print("E");
-  
-  Serial.print("F");*/
-  // #ifdef DEBUG
-  // _blu.info();
-  // #endif
-  _blu.verbose(false);
-  _blu.setMode(BLUEFRUIT_MODE_DATA);
-}
-
-void Creature::_processCommand() {
-  if (Serial.available()) {
-    String str = Serial.readStringUntil(' ');
-    str.toLowerCase();
-    if (str.equals("stop")) {
-      if (Serial.available()) {
-        uint8_t dst = (uint8_t) Serial.parseInt();
-        if (dst > 0) {
-          bool res = tx(1, _addr, dst, 0, nullptr);
-
-          if (!res) {
-            Serial.print("ERROR ");
-          }
-          Serial.print(dst == 255 ? "Stopping all creatures" : "Stopping creature #");
-          if (dst != 255) {
-            Serial.print(dst);
-          }
-          Serial.println();
-        }
-      }
-    } else if (str.equals("start")) {
-      if (Serial.available()) {
-        uint8_t dst = (uint8_t) Serial.parseInt();
-        if (dst > 0) {
-          Serial.readStringUntil(' ');
-          uint8_t mode = (uint8_t) _get_int();
-          uint8_t state = (uint8_t) _get_int();
-          uint8_t pld[2];
-          pld[0] = mode;
-          pld[1] = state;
-          bool res = tx(2, _addr, dst, 2, pld);
-
-          if (!res) {
-            Serial.print("ERROR ");
-          }
-          Serial.print(dst == 255 ? "Starting all creatures" : "Starting creature #");
-          if (dst != 255) {
-            Serial.print(dst);
-          }
-          Serial.print(" with mode 0x");
-          Serial.print(mode, HEX);
-          Serial.print(" and state");
-          Serial.println(state, HEX);
-          Serial.println();
-        }
-      }
-    } else if (str.equals("sound")) {
-      if (Serial.available()) {
-        uint8_t dst = (uint8_t) Serial.parseInt();
-        if (dst > 0) {
-          Serial.readStringUntil(' ');
-          uint8_t sound = (uint8_t) _get_int();
-          bool res = tx(3, _addr, dst, 1, &sound);
-
-          if (!res) {
-            Serial.print("ERROR ");
-          }
-          Serial.print(dst == 255 ? "Broadcasting to all creatures" : "Telling creature #");
-          if (dst != 255) {
-            Serial.print(dst);
-          }
-          Serial.print(" to play sound 0x");
-          Serial.println(sound, HEX);
-          Serial.println();
-        }
-      }
-    } else if (str.equals("effect")) {
-      if (Serial.available()) {
-       uint8_t dst = (uint8_t) Serial.parseInt();
-        if (dst > 0) {
-          Serial.readStringUntil(' ');
-          uint8_t effect = (uint8_t) _get_int();
-
-          bool res = tx(3, _addr, dst, 1, &effect);
-
-          if (!res) {
-            Serial.print("ERROR ");
-          }
-          Serial.print(dst == 255 ? "Broadcasting to all creatures" : "Telling creature #");
-          if (dst != 255) {
-            Serial.print(dst);
-          }
-          Serial.print(" to play effect 0x");
-          Serial.println(effect, HEX);
-          Serial.println();
-        }
-      }
-    } else if (str.equals("set")) {
-      if (Serial.available()) {
-        uint8_t globalIndex = (uint8_t) Serial.parseInt();
-        if (globalIndex >= 0 && globalIndex < GLOBALS_LEN) {
-          Serial.readStringUntil(' ');
-
-          if (!Serial.available()) {
-            Serial.print("Global index #");
-            Serial.print(globalIndex);
-            Serial.print(" == ");
-            Serial.println(GLOBALS_NAMES[globalIndex]);
-          } else {
-            Serial.print("Adjusting global ");
-            Serial.print(GLOBALS_NAMES[globalIndex]);
-            Serial.print(" from ");
-            void* ptr = (((char*)&GLOBALS) + GLOBALS_OFFSETS[globalIndex]);
-          
-            if (globalIndex == 7) {
-              Serial.print(*(float*) ptr);
-              Serial.print(" to ");
-              float val = Serial.parseFloat();
-              *(float*) ptr = val;
-              Serial.println(*(float*) ptr);
-            } else if (globalIndex == 8 || globalIndex == 0) {
-              Serial.print(*(uint16_t*) ptr);
-              Serial.print(" to ");
-              uint16_t val = (uint16_t) Serial.parseInt();
-              *(uint16_t*) ptr = val;
-              Serial.println(*(uint16_t*) ptr);
-            }else {
-              Serial.print(*(uint8_t*) ptr);
-              Serial.print(" to ");
-              uint8_t val = (uint8_t) Serial.parseInt();
-              if (globalIndex == 6) {
-                _updateGlobals(*(uint8_t*) ptr, val);
-              }
-              *(uint8_t*) ptr = val;
-              Serial.println(*(uint8_t*) ptr);
-            }
-          }
-          Serial.println();
-        } else {
-          Serial.print("ERROR, globals index ");
-          Serial.print(globalIndex);
-          Serial.print(" is greater than max index ");
-          Serial.println(GLOBALS_LEN - 1);
-          Serial.println();
-        }
-      }
-    } else if (str.equals("packet")) {
-      if (Serial.available()) {
-        uint8_t pid = (uint8_t) Serial.parseInt();
-        uint8_t src = (uint8_t) Serial.parseInt();
-        uint8_t dst = (uint8_t) Serial.parseInt();
-        Serial.readStringUntil(' ');
-        
-        uint8_t pld[RH_RF69_MAX_MESSAGE_LEN];
-        uint8_t sz = 0;
-        while (Serial.available() && sz < RH_RF69_MAX_MESSAGE_LEN) {
-          pld[sz] = _get_int();
-          sz++;
-        }
-
-        bool res = tx(pid, src, dst, sz, pld);
-      }
-    } else if (str.equals("update")) {
-       tx(0, _addr, 0xFF, sizeof(GLOBALS), (uint8_t*)&GLOBALS);
-    } else if (str.equals("states")) {
-      unsigned long now = millis();
-      for (int i = 1; i < GLOBALS.NUM_CREATURES + 1; i++) {
-        Serial.print("Creature ");
-        Serial.print(i);
-        Serial.print("\tState ");
-        _creatureTimes[i] ? Serial.print("0x") : Serial.print("");
-        _creatureTimes[i] ? Serial.print(_creatureStates[i], HEX) : Serial.print("N/A");
-        Serial.print("\tLast Contact: ");
-        _creatureTimes[i] ? Serial.print(now - _creatureTimes[i]) : Serial.print("N/A");
-        Serial.println(_creatureTimes[i] ? "ms" : "");
-      }
-      Serial.println();
-    } else if (str.equals("globals")) {
-
-      Serial.print("0\t TX_POWER                    ==   ");
-      Serial.println(GLOBALS.TX_POWER);
-
-      Serial.print("1\t STARTLE_RAND_MIN            ==   ");
-      Serial.println(GLOBALS.STARTLE_RAND_MIN);
-
-      Serial.print("2\t STARTLE_RAND_MAX            ==   ");
-      Serial.println(GLOBALS.STARTLE_RAND_MAX);
-
-      Serial.print("3\t STARTLE_MAX                 ==   ");
-      Serial.println(GLOBALS.STARTLE_MAX);
-
-      Serial.print("4\t STARTLE_THRESHOLD           ==   ");
-      Serial.println(GLOBALS.STARTLE_THRESHOLD);
-
-      Serial.print("5\t STARTLE_DECAY               ==   ");
-      Serial.println(GLOBALS.STARTLE_DECAY);
-
-      Serial.print("6\t NUM_CREATURES               ==   ");
-      Serial.println(GLOBALS.NUM_CREATURES);
-
-      Serial.print("7\t STARTLE_THRESHOLD_DECAY     ==   ");
-      Serial.println(GLOBALS.STARTLE_THRESHOLD_DECAY);
-
-      Serial.print("8\t CYCLE_TIME                  ==   ");
-      Serial.println(GLOBALS.CYCLE_TIME);
-
-      Serial.println();
-
-    } else if (str.equals("help")) {
-
-      Serial.println("globals");
-      Serial.println("   Prints the current global values\n");
-
-      Serial.println("states");
-      Serial.println("   Prints the current creature states & time since last transmission\n");
-
-      Serial.println("update");
-      Serial.println("   Force transmits globals to all creatures\n");
-      
-      Serial.println("stop <creature number>");
-      Serial.println("   Stops the given creature\n");
-
-      Serial.println("start <creature number> <mode> <state>");
-      Serial.println("   Starts the given creature into the given mode (0x00 for specified state, 0x01 for continue) and state (0x00 for random)\n");
-
-      Serial.println("sound <creature number> <sound number>");
-      Serial.println("   Commands the given creature to play the specified sound\n");
-
-      Serial.println("effect <creature number> <effect number>");
-      Serial.println("   Commands the given creature to play the specified effect\n");
-
-      Serial.println("set <global index> <value>");
-      Serial.println("\tSets the specified global to the given value\n");
-
-      Serial.println("packet <byte> ... <byte>");
-      Serial.println("\tSends a given packet\n");
-
-      Serial.println();
-    } else {
-      Serial.println("ERROR: INVALID COMMAND");
-      Serial.println(str);
-    }
-    Serial.readString();
-  }
-}
-
-void Creature::_updateGlobals(uint8_t sizeOld, uint8_t sizeNew) {
-  int8_t* newDistances = new int8_t[sizeNew + 1]();
-  uint8_t* newStates = new uint8_t[sizeNew + 1]();
-  unsigned long* newTimes = new unsigned long[sizeNew + 1]();
-
-  int overlap = sizeOld > sizeNew ? sizeNew : sizeOld;
-  for (int i = 0; i < overlap; i++) {
-    newDistances[i] = _creatureDistances[i];
-    newStates[i] = _creatureStates[i];
-    newTimes[i] = _creatureTimes[i];
-  }
-
-  delete[] _creatureDistances;
-  delete[] _creatureStates;
-  delete[] _creatureTimes;
-
-  _creatureDistances = newDistances;
-  _creatureStates = newStates;
-  _creatureTimes = newTimes;
-}
-
-
-void Creature::_updateCreature(uint8_t id) {
-  if (id < GLOBALS.NUM_CREATURES) {
-    _creatureTimes[id] = millis();
-  }
 }
 
 void Creature::loop() {
   unsigned long thisLoop = millis();
-  unsigned long dt = thisLoop - _lastLoop;
+  uint32_t dt = thisLoop - _lastLoop;
 
   _pollRadio();
-  _processCommand();
 
   // Only trigger state loops and transitions every CYCLE_TIME ms
-  if (dt > CONT_CYCLE_TIME) {
-    for (int i = 1; i < GLOBALS.NUM_CREATURES + 1; i++) {
-      if (thisLoop - _creatureTimes[i] > 60000) {
-        _creatureTimes[i] = 0;
-        _creatureStates[i] = 0;
-      }
-    }
-    
+  if (dt > GLOBALS.CYCLE_TIME) {
     _updateDisplay();
+
+    // Uncomment to see all the current states & distances for creatures
+    /*for (int i = 0; i < GLOBALS.NUM_CREATURES + 1; i++) {
+      Serial.print(_creatureStates[i]);
+      Serial.print("\t");
+    }
+    Serial.println();
+
+    for (int i = 0; i < GLOBALS.NUM_CREATURES + 1; i++) {
+      Serial.print(_creatureDistances[i]);
+      Serial.print("\t");
+    }
+    Serial.println();*/
+
+    dprint("Threshold: ");
+    dprint(_startleThreshold);
+    dprint("/");
+    dprintln("255");
 
     if (_next != NULL) {
       // We have a predefined next state, transition immediately
@@ -371,32 +95,45 @@ void Creature::loop() {
 
     _lastLoop = thisLoop;
   }
+
+  // Poll PIR
+  bool newPIR = digitalRead(PIR_PIN);
+  if (newPIR && !_PIR) {
+    // Rising edge trigger
+    _state->PIR();
+    _PIR = newPIR;
+  } else if (!newPIR && _PIR) {
+    // Falling edge
+    dprintln("PIR reset");
+    _PIR = newPIR;
+  }
+
+  Neopixel::loop();
 }
 
 bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, int8_t rssi) {
   _rxCount++;
   _updateDistance(srcAddr, rssi);
 
-  _updateCreature(srcAddr);
-
   switch (pid) {
     case PID_SET_GLOBALS:
-      return true;
+      if (srcAddr != CONTROLLER_ADDR) return false;
+      return _rxSetGlobals(len, payload);
     case PID_STOP:
+      if (srcAddr != CONTROLLER_ADDR) return false;
+      _rxStop();
       return true;
     case PID_START:
-      return true;
+      if (srcAddr != CONTROLLER_ADDR) return false;
+      return _rxStart(len, payload);
     case PID_PLAY_SOUND:
-      return true;
+      return _state->rxPlaySound(len, payload);
     case PID_PLAY_EFFECT:
-      return true;
+      return _state->rxPlayEffect(len, payload);
     case PID_BROADCAST_STATES:
-      return true;
+      return _rxBroadcastStates(len, payload);
     case PID_STARTLE:
-      return true;
-    case PID_SEND_STATE:
-      _receiveState(srcAddr, payload[0]);
-      return true;
+      return _state->rxStartle(rssi, len, payload);
     default:
       Serial.print(F("Received packet of unknown type: "));
       Serial.print(pid, HEX);
@@ -405,24 +142,114 @@ bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, 
 }
 
 void Creature::_updateDistance(uint8_t addr, int8_t rssi) {
+  if (addr <= GLOBALS.NUM_CREATURES) {
+    // Update gradually so we don't move too much
+    _creatureDistances[addr] = _creatureDistances[addr] * DISTANCE_ALPHA + rssi * (1 - DISTANCE_ALPHA);
+  }
+}
+
+uint8_t Creature::updateThreshold() {
+  uint8_t delta = getStartleThreshold() * (millis() - getLastStartle()) * _state->getStartleFactor() * GLOBALS.STARTLE_THRESHOLD_DECAY;
+  if ((int16_t) getStartleThreshold() - (int16_t) delta < 0) {
+    setStartleThreshold(0);
+  } else {
+    setStartleThreshold((uint8_t) round(getStartleThreshold() - delta));
+  }
+  setLastStartle(millis());
 }
 
 bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
+  if (len != sizeof(struct Globals)) {
+    Serial.print(F("Received SetGlobals payload of length "));
+    Serial.print(len);
+    Serial.print(F(" when sizeof(Globals) = "));
+    Serial.print(sizeof(struct Globals));
+    Serial.println(F(" was expected"));
+    return false;
+  }
+
+  struct Globals old = GLOBALS;
+  memcpy(&GLOBALS, payload, sizeof(struct Globals));
+
+  dprintln(F("Setting globals:"));
+  if (old.TX_POWER != GLOBALS.TX_POWER) {
+    dprint(F("\tTX_POWER: ")); dprintln(GLOBALS.TX_POWER);
+  } if (old.STARTLE_RAND_MIN != GLOBALS.STARTLE_RAND_MIN) {
+    dprint(F("\tSTARTLE_RAND_MIN: ")); dprintln(GLOBALS.STARTLE_RAND_MIN);
+  } if (old.STARTLE_RAND_MAX != GLOBALS.STARTLE_RAND_MAX) {
+    dprint(F("\tSTARTLE_RAND_MAX: ")); dprintln(GLOBALS.STARTLE_RAND_MAX);
+  } if (old.STARTLE_MAX != GLOBALS.STARTLE_MAX) {
+    dprint(F("\tSTARTLE_MAX: ")); dprintln(GLOBALS.STARTLE_MAX);
+  } if (old.STARTLE_THRESHOLD != GLOBALS.STARTLE_THRESHOLD) {
+    dprint(F("\tSTARTLE_THRESHOLD: ")); dprintln(GLOBALS.STARTLE_THRESHOLD);
+  } if (old.STARTLE_THRESHOLD_DECAY != GLOBALS.STARTLE_THRESHOLD_DECAY) {
+    dprint(F("\tSTARTLE_THRESHOLD_DECAY: ")); dprintln(GLOBALS.STARTLE_THRESHOLD_DECAY);
+  } if (old.STARTLE_DECAY != GLOBALS.STARTLE_DECAY) {
+    dprint(F("\tSTARTLE_DECAY: ")); dprintln(GLOBALS.STARTLE_DECAY);
+  } if (old.NUM_CREATURES != GLOBALS.NUM_CREATURES) {
+    dprint(F("\tNUM_CREATURES: ")); dprintln(GLOBALS.NUM_CREATURES);
+  } if (old.CYCLE_TIME != GLOBALS.CYCLE_TIME) {
+    dprint(F("\tCYCLE_TIME: ")); dprintln(GLOBALS.CYCLE_TIME);
+  }
+
+  // Handle changes in num creatures.
+  if (old.NUM_CREATURES != GLOBALS.NUM_CREATURES) {
+    dprint(F("Resizing creature arrays from "));
+    dprint(old.NUM_CREATURES);
+    dprint(F(" to "));
+    dprintln(GLOBALS.NUM_CREATURES);
+
+    delete[] _creatureStates;
+    delete[] _creatureDistances;
+
+    // Parens zero initialize.
+    _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
+    _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES + 1]();
+  }
+
+  // Handle change in tx power.
+  if (old.TX_POWER != GLOBALS.TX_POWER) {
+    _rf69.setTxPower(GLOBALS.TX_POWER, true);
+  }
+
   return true;
 }
 
 void Creature::_rxStop() {
+  setNextState(new Wait(*this));
 }
 
 bool Creature::_rxStart(uint8_t len, uint8_t* payload) {
+  if (len != 2) {
+    Serial.print(F("Start packet has invalid payload length: "));
+    Serial.println(len);
+    return false;
+  }
+  uint8_t mode = payload[0];
+
+  Serial.print("Mode: ");Serial.println(mode);
+  if (mode) {
+    Serial.print("Transitioning to _prev (");Serial.print(_prev->getName());Serial.print(") ");Serial.println((uint32_t)_prev, HEX);
+    _transition(_prev); // TODO: Fix
+  } else {
+    uint8_t nextStateID = payload[1];
+    if (!nextStateID) {
+      nextStateID = rand() % 6 + 1;
+    }
+    _transition(getState(nextStateID));
+  }
+
   return true;
 }
 
 bool Creature::_rxBroadcastStates(uint8_t len, uint8_t* payload) {
+  for (int i = 0; i < min(len, GLOBALS.NUM_CREATURES); i++) {
+    _creatureStates[i + 1] = payload[i];
+  }
   return true;
 }
 
-bool Creature::tx(const uint8_t pid, const uint8_t src_addr, const uint8_t dst_addr, const uint8_t len, uint8_t* const payload) {
+bool Creature::tx(const uint8_t pid, const uint8_t dst_addr, const uint8_t len, uint8_t* const payload) {
   if (len + 3 > RH_RF69_MAX_MESSAGE_LEN) {
     Serial.print(F("Packet length "));
     Serial.print(len);
@@ -433,7 +260,7 @@ bool Creature::tx(const uint8_t pid, const uint8_t src_addr, const uint8_t dst_a
   }
 
   _buf[0] = pid;
-  _buf[1] = src_addr;
+  _buf[1] = _addr;
   _buf[2] = dst_addr;
   memcpy(_buf + 3, payload, len);
 
@@ -447,7 +274,7 @@ bool Creature::tx(const uint8_t pid, const uint8_t src_addr, const uint8_t dst_a
   Serial.print(F(" bytes to address "));
   Serial.print(dst_addr);
   Serial.print(F(" from address "));
-  Serial.println(src_addr);
+  Serial.println(_addr);
 
   for (uint8_t* i = &_buf[3]; i < &_buf[len + 3]; i++) {
     if (*i < 16) {
@@ -472,18 +299,12 @@ bool Creature::tx(const uint8_t pid, const uint8_t src_addr, const uint8_t dst_a
 
 void Creature::_txSendState(uint8_t oldState, uint8_t newState) {
   uint8_t payload[] = {oldState, newState};
-  tx(PID_SEND_STATE, _addr, CONTROLLER_ADDR, sizeof(payload), payload);
-}
-
-void Creature::_receiveState(uint8_t src, uint8_t st) {
-  if (src < GLOBALS.NUM_CREATURES) {
-    _creatureStates[src] = st;
-  }
+  tx(PID_SEND_STATE, CONTROLLER_ADDR, sizeof(payload), payload);
 }
 
 void Creature::_pollRadio() {
   // Poll radio for packets
-  if (_rf69.waitAvailableTimeout(100)) {
+  if (_rf69.waitAvailableTimeout(25)) {
     uint8_t len = sizeof(_buf);
 
     // Should be a message available
@@ -522,7 +343,6 @@ void Creature::_pollRadio() {
     }
 
     Serial.println();
-    Serial.println();
 
     if (dstAddr == _addr || dstAddr == BROADCAST_ADDR) {
       if (!_rx(pid, srcAddr, len - 3, &_buf[3], _rf69.lastRssi())) {
@@ -536,19 +356,60 @@ void Creature::_pollRadio() {
   }
 }
 
-void Creature::_transition(State* const state) {
-  State* const old = _state;
-  _state = state;
-
-  if (state != old) {
-    if (old != nullptr) {
-      delete old;
-      _txSendState(old->getId(), state->getId());
-    } else {
-      _txSendState(0, state->getId());
+ State* Creature::getState(int id) {
+    switch (id) {
+      case 1:
+        return new Ambient1(*this);
+      case 2:
+        return new Active1(*this);
+      case 3:
+        return new Ambient2(*this);
+      case 4:
+        return new Active2(*this);
+      case 5:
+        return new Ambient3(*this);
+      case 6:
+        return new Active3(*this);
+      case 255:
+        return new Startle(*this);
+      default:
+        return new Wait(*this);
     }
   }
 
+void Creature::_transition(State* const state) {
+  if (state == nullptr) {
+    Serial.println("Cannot transition to null state!");
+    return;
+  }
+
+  State* const old = _state;
+
+  if (old == nullptr || state->getId() != old->getId()) {
+    Serial.print("Transitioning from state ");
+    Serial.print(old == nullptr ? -1 : old->getId());
+    Serial.print(" to ");
+    Serial.println(state->getId());
+
+    _state = state;
+  
+    if (state->getId() != WAIT && state->getId() != STARTLE) {
+      updateThreshold();
+    }
+    
+    
+
+    if (_prev != nullptr && _prev != state) {
+      // Delete the current _prev if it's not null, and it's not what we're currently transitioning to.
+      delete _prev;
+    }
+
+    _txSendState(old == nullptr ? 0 : old->getId(), state->getId());
+    _prev = old;
+  } else if (state != old){
+    // No need to transition, free this memory if it is not the same state.
+    delete state;
+  }
   _remainingRepeats = _state->getNumRepeats();
 }
 
@@ -560,17 +421,28 @@ void Creature::_updateDisplay() {
   oled.renderBattery();
 
   oled.setCursor(0, 0);
+  oled.print(_state ? _state->getName() : "None");
+
+  oled.setCursor(0, 11);
   oled.print(F("TXRX:"));
   oled.print(_txCount);
   oled.print(F("/"));
   oled.println(_rxCount);
 
-  oled.setCursor(0, 9);
-  oled.print(_state ? _state->getName() : "None");
-
-  oled.setCursor((OLED_WIDTH - 3) * 6, 9);
+  oled.setCursor((OLED_WIDTH - 2 - (_addr > 9) - (_addr > 99) - sizeof(VERSION)) * 6, 11);
   oled.print("#");
   oled.print(_addr);
+  oled.print("v");
+  oled.print(VERSION);
+
+  oled.setCursor(0, 22);
+  oled.print(F("Sound: "));
+  oled.print(Midi::getSound());
+
+  uint8_t lightIdx = Neopixel::getLight();
+  oled.setCursor((OLED_WIDTH - 8 - (lightIdx > 9) - (lightIdx > 99)) * 6, 22);
+  oled.print(F("Light: "));
+  oled.print(lightIdx);
 
   oled.display();
 }
@@ -591,11 +463,7 @@ void Creature::setup() {
   oled.setBatteryVisible(true);
   _updateDisplay();
 
-  strip.begin();
-  strip.setBrightness(5);
-  strip.show();
-
-  _initializeBluetooth();
+  Neopixel::setup();
 
   pinMode(RFM69_RST, OUTPUT);
   digitalWrite(RFM69_RST, LOW);
@@ -611,6 +479,7 @@ void Creature::setup() {
   }
   _rf69.setTxPower(GLOBALS.TX_POWER, true);
 
+  // Guaranteed random https://xkcd.com/221
   uint8_t key[] = {0x98, 0xe8, 0xac, 0xe6, 0xfa, 0xca, 0xc1, 0xb8,
                    0xf7, 0xf2, 0x18, 0xc3, 0x5c, 0xce, 0x96, 0x65};
   _rf69.setEncryptionKey(key);
@@ -618,10 +487,14 @@ void Creature::setup() {
   Serial.print(F("RFM69 radio @ "));
   Serial.print(RFM69_FREQ);
   Serial.println(F("MHz"));
+
+  Midi::setup();
+
+  pinMode(PIR_PIN, INPUT);
+  _PIR = digitalRead(PIR_PIN);
 }
 
 Creature::~Creature() {
   delete[] _creatureDistances;
   delete[] _creatureStates;
-  delete[] _creatureTimes;
 }
