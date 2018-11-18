@@ -5,7 +5,7 @@
 constexpr uint8_t Ambient2::_localWeights[];
 
 uint8_t Ambient2::getNumRepeats() {
- return rand() % 8 + 1; // 1 - 8
+ return rand() % 5 + 4; // 4 - 8 repeats
 }
 
 void Ambient2::loop(uint32_t dt) {
