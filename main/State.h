@@ -119,21 +119,6 @@ class State {
    */
   virtual void startled(uint8_t strength, uint8_t id);
 
-
-  /**
-   * Called when an sound should be displayed
-   *
-   * @param sound_idx  Sound index in sound array.
-   */
-  virtual void playSound(uint8_t sound_idx);
-
-  /**
-   * Called when an effect should be displayed
-   *
-   * @param effect_idx  Effect index in effect array.
-   */
-  virtual void playEffect(uint8_t effect_idx);
-
   /** Reference to the creature this is a state in */
   Creature& _creature;
 

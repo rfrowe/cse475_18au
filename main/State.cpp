@@ -1,6 +1,8 @@
 #include "Creature.h"
 #include "State.h"
 #include "Startle.h"
+#include "Midi.h"
+#include "Neopixel.h"
 
 State::State(Creature& creature, char* const name, const uint8_t id) : _creature(creature), _id(id) {
   strncpy(_name, name, MAX_NAME_LEN);
@@ -15,31 +17,11 @@ char* State::getName() {
   return _name;
 }
 
-void State::playSound(uint8_t sound_idx) {
-  switch (sound_idx) {
-    case 0:
-      Serial.println("Playing sound 0...");
-    default:
-      Serial.print("No sound of ID ");
-      Serial.println(sound_idx);
-  }
-}
-
-void State::playEffect(uint8_t effect_idx) {
-  switch (effect_idx) {
-    case 0:
-      Serial.println("Playing effect 0...");
-    default:
-      Serial.print("No effect of ID ");
-      Serial.println(effect_idx);
-  }
-}
-
 bool State::rxPlaySound(uint8_t len, uint8_t* payload) {
   if (len < 1) {
     return false;
   }
-  playSound(payload[0]);
+  Midi::setSound(payload[0]);
   return true;
 }
 
@@ -47,7 +29,7 @@ bool State::rxPlayEffect(uint8_t len, uint8_t* payload) {
   if (len < 1) {
     return false;
   }
-  playEffect(payload[0]);
+  Neopixel::setLight(payload[0]);
   return true;
 }
 
