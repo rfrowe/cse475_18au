@@ -15,7 +15,7 @@
 #include <cmath>
 
 // TODO: put your kit number here
-#define KIT_NUM 2
+#define KIT_NUM 0
 
 #define VERSION "2.1"
 
