@@ -2,7 +2,6 @@
 #include "Debug.h"
 
 // Initialize fixed list of light gestures.
-//void (*Neopixel::LIGHTS[2])(uint32_t) = {nullptr, &rainbow};
 constexpr void (*Neopixel::LIGHTS[])(uint32_t);
 
 uint8_t Neopixel::_currentIdx = 0;
@@ -16,18 +15,18 @@ void Neopixel::setup() {
 }
 
 void Neopixel::loop() {
-    uint32_t thisLoop = millis();
-    uint32_t dt;
-    if (_lastLoop) {
-        dt = thisLoop - _lastLoop;
-    } else {
-        dt = 0;
-    }
-    _lastLoop = thisLoop;
+  uint32_t thisLoop = millis();
+  uint32_t dt;
+  if (_lastLoop) {
+    dt = thisLoop - _lastLoop;
+  } else {
+    dt = 0;
+  }
+  _lastLoop = thisLoop;
 
-    if (LIGHTS[_currentIdx] != nullptr) {
-        LIGHTS[_currentIdx](dt);
-    }
+  if (LIGHTS[_currentIdx] != nullptr) {
+    LIGHTS[_currentIdx](dt);
+  }
 }
 
 void Neopixel::setLight(uint8_t lightIdx) {
@@ -41,6 +40,7 @@ void Neopixel::setLight(uint8_t lightIdx) {
     _strip.show();
 
     _currentIdx = lightIdx;
+    _lastLoop = 0;
   }
 }
 
