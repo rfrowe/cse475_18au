@@ -45,7 +45,7 @@ Creature::Creature() {
   _creatureStates = new uint8_t[GLOBALS.NUM_CREATURES + 1]();
 
   _battery = getBatteryVoltage();
-  srand(_addr * (_battery * 100));
+  srand(_addr * ((int) (_battery * 100)));
 
   _lastStartle = millis();
   _lastLoop = millis();
