@@ -96,6 +96,8 @@ void Creature::loop() {
     _lastLoop = thisLoop;
   }
 
+  Neopixel::loop();
+
   // Poll PIR
   bool newPIR = digitalRead(PIR_PIN);
   if (newPIR && !_PIR) {
@@ -107,8 +109,6 @@ void Creature::loop() {
     dprintln("PIR reset");
     _PIR = newPIR;
   }
-
-  Neopixel::loop();
 }
 
 bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, int8_t rssi) {
