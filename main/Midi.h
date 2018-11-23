@@ -65,20 +65,49 @@ class Midi {
    *
    * @param soundIdx Index of new sound to play in Midi::SOUNDS.
    */
-  static void setSound(uint8_t soundIdx);
+  static void setSound(uint8_t soundIdx, bool loop=false, uint8_t transpose=0, uint16_t duration_offset=0);
 
   /**
    * @returns the index of the current sound gesture.
    */
-  static uint8_t getSound();
+  static uint8_t getSoundIdx();
+
+  /**
+   * @returns the currently playing sound gesture.
+   */
+  static Sound* getSound();
+
+  /**
+   * @return true if the current sound should loop, false otherwise.
+   */
+  static bool loop();
+
+  /**
+   * @returns the note transpose for the current sound gesture.
+   */
+  static uint8_t transpose();
+
+  /**
+   * @returns the duration offset for the current sound gesture.
+   */
+  static uint16_t duration_offset();
 
   static void setup();
-
-  /** Current sound being played. */
-  static Sound *_current;
  private:
   /** Index of current sound being played. */
-  static uint8_t _currentIdx;
+  volatile static uint8_t _currentIdx;
+
+  /** Current sound being played. */
+  static Sound* volatile _current;
+
+  /** Whether or not the currently playing sound should loop. */
+  volatile static bool _loop;
+
+  /** Global transpose applied to all sounds, independent of a specific sound's transpose. */
+  volatile static uint8_t _transpose;
+
+  /** Global duration offset applied to all sounds, independent of a specific sound's duration offset.  */
+  volatile static uint16_t _duration_offset;
 
   static void tcStartCounter();
   static void tcConfigure(int frequencyHz);

@@ -437,7 +437,7 @@ void Creature::_updateDisplay() {
 
   oled.setCursor(0, 22);
   oled.print(F("Sound: "));
-  oled.print(Midi::getSound());
+  oled.print(Midi::getSoundIdx());
 
   uint8_t lightIdx = Neopixel::getLight();
   oled.setCursor((OLED_WIDTH - 8 - (lightIdx > 9) - (lightIdx > 99)) * 6, 22);

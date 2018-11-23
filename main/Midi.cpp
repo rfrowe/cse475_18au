@@ -11,14 +11,19 @@ void setBank(uint8_t, uint8_t);
 constexpr Sound* Midi::SOUNDS[];
 
 // Set default sound to none.
-uint8_t Midi::_currentIdx = 0;
-Sound* Midi::_current = Midi::SOUNDS[Midi::_currentIdx];
+volatile uint8_t Midi::_currentIdx = 0;
+Sound* volatile Midi::_current = Midi::SOUNDS[Midi::_currentIdx];
 
-bool gestFlag = false;
-bool noteFlag = false;
+volatile bool Midi::_loop = false;
 
-uint8_t noteIdx = 0;
-uint8_t duration = 0;
+volatile bool gestFlag = false;
+volatile bool noteFlag = false;
+
+volatile uint8_t Midi::_transpose = 0;
+volatile uint16_t Midi::_duration_offset = 0;
+
+volatile uint8_t noteIdx = 0;
+volatile uint8_t duration = 0;
 
 void noteOn(uint8_t chan, uint8_t n, uint8_t vel) {
   if (chan > 15) return;
@@ -111,13 +116,17 @@ void Midi::tcStartCounter() {
   while (tcIsSyncing()); //wait until snyc'd
 }
 
-void Midi::setSound(uint8_t soundIdx) {
+void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t duration_offset) {
   noInterrupts();
 
   // Constrain soundIdx. Anything outside of the bounds of the array is 0.
   if (soundIdx >= sizeof(SOUNDS) / sizeof(void*)) {
     soundIdx = 0;
   }
+
+  Midi::_loop = loop;
+  Midi::_transpose = transpose;
+  Midi::_duration_offset = duration_offset;
 
   if (_current != SOUNDS[soundIdx]) {
     if (_current != nullptr && noteFlag) {
@@ -137,8 +146,24 @@ void Midi::setSound(uint8_t soundIdx) {
   interrupts();
 }
 
-uint8_t Midi::getSound() {
+uint8_t Midi::getSoundIdx() {
   return _currentIdx;
+}
+
+Sound* Midi::getSound(){
+  return _current;
+}
+
+bool Midi::loop() {
+  return _loop;
+}
+
+uint8_t Midi::transpose() {
+  return (_current == nullptr ? 0 : _current->transpose) + _transpose;
+}
+
+uint16_t Midi::duration_offset() {
+  return (_current == nullptr ? 0 : _current->duration_offset) + _duration_offset;
 }
 
 void Midi::setup() {
@@ -161,33 +186,34 @@ void tcDisable() {
 }
 
 void TC5_Handler(void) {
-  if (Midi::_current != nullptr) {
+  Sound* current = Midi::getSound();
+
+  if (current != nullptr) {
     if (!gestFlag) {
-      setVolume(0, Midi::_current->volume);
-      setBank(0, Midi::_current->bank);
-      setInstrument(0, Midi::_current->instrument);
+      setVolume(0, current->volume);
+      setBank(0, current->bank);
+      setInstrument(0, current->instrument);
       noteIdx = 0;
       gestFlag = true;
     }
 
     if (!noteFlag) {
-      if (noteIdx == Midi::_current->len) {
-        if (!Midi::_current->loop) {
-          gestFlag = false;
-          Midi::_current = nullptr;
+      if (noteIdx == current->len) {
+        if (!Midi::loop()) {
+          Midi::setSound(0);
           return;
         }
 
         noteIdx = 0;
       }
 
-      duration = Midi::_current->durations[noteIdx];
-      noteOn(0, Midi::_current->notes[noteIdx], Midi::_current->volume);
+      duration = current->durations[noteIdx] + Midi::duration_offset();
+      noteOn(0, current->notes[noteIdx] + Midi::transpose(), current->volume);
       noteFlag = true;
     }
 
     if (!--duration) {
-      noteOff(0, Midi::_current->notes[noteIdx], Midi::_current->volume);
+      noteOff(0, current->notes[noteIdx] + Midi::transpose(), current->volume);
       noteFlag = false;
       noteIdx++;
     }
