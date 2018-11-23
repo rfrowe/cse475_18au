@@ -15,6 +15,7 @@ volatile uint8_t Midi::_currentIdx = 0;
 Sound* volatile Midi::_current = Midi::SOUNDS[Midi::_currentIdx];
 
 volatile bool Midi::_loop = false;
+volatile bool Midi::_retrograde = false;
 
 volatile bool gestFlag = false;
 volatile bool noteFlag = false;
@@ -43,6 +44,14 @@ void noteOff(uint8_t chan, uint8_t n, uint8_t vel) {
   VS1053_MIDI.write(MIDI_NOTE_OFF | chan);
   VS1053_MIDI.write(n);
   VS1053_MIDI.write(vel);
+}
+
+void allNoteOff(uint chan) {
+  if (chan > 15) return;
+
+  VS1053_MIDI.write(MIDI_CHAN_MSG | chan);
+  VS1053_MIDI.write(MIDI_NOTE_ALL_OFF_1);
+  VS1053_MIDI.write(MIDI_NOTE_ALL_OFF_1);
 }
 
 void setInstrument(uint8_t chan, uint8_t inst) {
@@ -116,7 +125,7 @@ void Midi::tcStartCounter() {
   while (tcIsSyncing()); //wait until snyc'd
 }
 
-void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t duration_offset) {
+void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t duration_offset, bool retrograde) {
   noInterrupts();
 
   // Constrain soundIdx. Anything outside of the bounds of the array is 0.
@@ -124,13 +133,14 @@ void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t dur
     soundIdx = 0;
   }
 
-  Midi::_loop = loop;
-  Midi::_transpose = transpose;
-  Midi::_duration_offset = duration_offset;
+  _loop = loop;
+  _transpose = transpose;
+  _duration_offset = duration_offset;
+  _retrograde = retrograde;
 
   if (_current != SOUNDS[soundIdx]) {
     if (_current != nullptr && noteFlag) {
-      noteOff(0, _current->notes[noteIdx], _current->volume);
+      allNoteOff(0);
       noteFlag = false;
     }
 
@@ -158,6 +168,10 @@ bool Midi::loop() {
   return _loop;
 }
 
+bool Midi::retrograde() {
+  return _retrograde;
+}
+
 uint8_t Midi::transpose() {
   return (_current == nullptr ? 0 : _current->transpose) + _transpose;
 }
@@ -170,6 +184,7 @@ void Midi::setup() {
   VS1053_MIDI.begin(31250);
   Midi::tcConfigure(1000);  // Hz
   Midi::tcStartCounter();
+  allNoteOff(0);
 }
 
 //Reset TC5
@@ -187,8 +202,10 @@ void tcDisable() {
 
 void TC5_Handler(void) {
   Sound* current = Midi::getSound();
+  bool retrograde = Midi::retrograde();
 
   if (current != nullptr) {
+    Serial.print("Note idx: ");Serial.println(retrograde ? current->len - noteIdx - 1 : noteIdx);
     if (!gestFlag) {
       setVolume(0, current->volume);
       setBank(0, current->bank);
@@ -207,13 +224,13 @@ void TC5_Handler(void) {
         noteIdx = 0;
       }
 
-      duration = current->durations[noteIdx] + Midi::duration_offset();
-      noteOn(0, current->notes[noteIdx] + Midi::transpose(), current->volume);
+      duration = current->durations[retrograde ? current->len - noteIdx - 1 : noteIdx] + Midi::duration_offset();
+      noteOn(0, current->notes[retrograde ? current->len - noteIdx - 1 : noteIdx] + Midi::transpose(), current->volume);
       noteFlag = true;
     }
 
     if (!--duration) {
-      noteOff(0, current->notes[noteIdx] + Midi::transpose(), current->volume);
+      noteOff(0, current->notes[retrograde ? current->len - noteIdx - 1 : noteIdx] + Midi::transpose(), current->volume);
       noteFlag = false;
       noteIdx++;
     }

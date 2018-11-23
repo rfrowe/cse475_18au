@@ -22,6 +22,8 @@
 
 #define MIDI_NOTE_ON  0x90
 #define MIDI_NOTE_OFF 0x80
+#define MIDI_NOTE_ALL_OFF_1 0x7b
+#define MIDI_NOTE_ALL_OFF_2 0x7f
 #define MIDI_CHAN_MSG 0xB0
 #define MIDI_CHAN_BANK 0x00
 #define MIDI_CHAN_VOLUME 0x07
@@ -64,8 +66,12 @@ class Midi {
    * Use this to set the current sound gesture.
    *
    * @param soundIdx Index of new sound to play in Midi::SOUNDS.
+   * @param loop Whether or not the sound should loop when finished.
+   * @param transpose Amount each note should be shifted in the sound.
+   * @param duration_offset Amount each note's duration should be shifted in the sound.
+   * @param retrograde Whether or not the sound should be played in reverse.
    */
-  static void setSound(uint8_t soundIdx, bool loop=false, uint8_t transpose=0, uint16_t duration_offset=0);
+  static void setSound(uint8_t soundIdx, bool loop=false, uint8_t transpose=0, uint16_t duration_offset=0, bool retrograde=false);
 
   /**
    * @returns the index of the current sound gesture.
@@ -81,6 +87,11 @@ class Midi {
    * @return true if the current sound should loop, false otherwise.
    */
   static bool loop();
+
+  /**
+   * @return true if the current sound should be played in reverse, false otherwise.
+   */
+  static bool retrograde();
 
   /**
    * @returns the note transpose for the current sound gesture.
@@ -102,6 +113,9 @@ class Midi {
 
   /** Whether or not the currently playing sound should loop. */
   volatile static bool _loop;
+
+  /** Whether or not the current sound gesture should be played in reverse. */
+  volatile static bool _retrograde;
 
   /** Global transpose applied to all sounds, independent of a specific sound's transpose. */
   volatile static uint8_t _transpose;
