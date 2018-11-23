@@ -70,8 +70,9 @@ class Midi {
    * @param transpose Amount each note should be shifted in the sound.
    * @param duration_offset Amount each note's duration should be shifted in the sound.
    * @param retrograde Whether or not the sound should be played in reverse.
+   * @param instrument Instrument override or negative for default sound instrument.
    */
-  static void setSound(uint8_t soundIdx, bool loop=false, uint8_t transpose=0, uint16_t duration_offset=0, bool retrograde=false);
+  static void setSound(uint8_t soundIdx, bool loop=false, uint8_t transpose=0, uint16_t duration_offset=0, bool retrograde=false, int16_t instrument=-1);
 
   /**
    * @returns the index of the current sound gesture.
@@ -92,6 +93,11 @@ class Midi {
    * @return true if the current sound should be played in reverse, false otherwise.
    */
   static bool retrograde();
+
+  /**
+   * @returns the instrument for the current sound gesture.
+   */
+  static uint8_t instrument();
 
   /**
    * @returns the note transpose for the current sound gesture.
@@ -116,6 +122,9 @@ class Midi {
 
   /** Whether or not the current sound gesture should be played in reverse. */
   volatile static bool _retrograde;
+
+  /** Instrument with which to play the current sound.. */
+  volatile static uint8_t _instrument;
 
   /** Global transpose applied to all sounds, independent of a specific sound's transpose. */
   volatile static uint8_t _transpose;

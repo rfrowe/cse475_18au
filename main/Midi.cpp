@@ -20,6 +20,7 @@ volatile bool Midi::_retrograde = false;
 volatile bool gestFlag = false;
 volatile bool noteFlag = false;
 
+volatile uint8_t Midi::_instrument = 0;
 volatile uint8_t Midi::_transpose = 0;
 volatile uint16_t Midi::_duration_offset = 0;
 
@@ -125,7 +126,7 @@ void Midi::tcStartCounter() {
   while (tcIsSyncing()); //wait until snyc'd
 }
 
-void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t duration_offset, bool retrograde) {
+void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t duration_offset, bool retrograde, int16_t instrument) {
   noInterrupts();
 
   // Constrain soundIdx. Anything outside of the bounds of the array is 0.
@@ -137,6 +138,7 @@ void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t dur
   _transpose = transpose;
   _duration_offset = duration_offset;
   _retrograde = retrograde;
+  _instrument = instrument;
 
   if (_current != SOUNDS[soundIdx]) {
     if (_current != nullptr && noteFlag) {
@@ -150,6 +152,8 @@ void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t dur
     if (_current == nullptr) {
       noteFlag = false;
       gestFlag = false;
+    } else if (instrument < 0) {
+      _instrument = _current->instrument;
     }
   }
 
@@ -170,6 +174,10 @@ bool Midi::loop() {
 
 bool Midi::retrograde() {
   return _retrograde;
+}
+
+uint8_t Midi::instrument() {
+  return _instrument;
 }
 
 uint8_t Midi::transpose() {
@@ -209,7 +217,7 @@ void TC5_Handler(void) {
     if (!gestFlag) {
       setVolume(0, current->volume);
       setBank(0, current->bank);
-      setInstrument(0, current->instrument);
+      setInstrument(0, Midi::instrument());
       noteIdx = 0;
       gestFlag = true;
     }
