@@ -27,7 +27,7 @@ inline float getBatteryVoltage() {
 
 Creature::Creature() {
   // Initialize _next to be the Wait state, so we will immediately transition into it on the first loop.
-  _next = new Ambient1(*this);
+  _next = getState(1);
   _prev = _state = nullptr;
 
   if (KIT_NUM < 0) {
