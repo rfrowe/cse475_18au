@@ -26,7 +26,7 @@ volatile uint8_t Midi::_transpose = 0;
 volatile uint16_t Midi::_duration_offset = 0;
 
 volatile uint8_t noteIdx = 0;
-volatile uint8_t duration = 0;
+volatile uint16_t duration = 0;
 
 void noteOn(uint8_t chan, uint8_t n, uint8_t vel) {
   if (chan > 15) return;
