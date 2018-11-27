@@ -149,16 +149,15 @@ void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t dur
 
     if (_current != nullptr && noteFlag) {
       allNoteOff(0);
-      noteFlag = false;
     }
 
     _currentIdx = soundIdx;
     _current = SOUNDS[soundIdx];
 
-    if (_current == nullptr) {
-      noteFlag = false;
-      gestFlag = false;
-    } else if (instrument < 0) {
+    noteFlag = false;
+    gestFlag = false;
+
+    if (_current != nullptr && instrument < 0) {
       _instrument = _current->instrument;
     }
   }
@@ -228,7 +227,7 @@ void TC5_Handler(void) {
     }
 
     if (!noteFlag) {
-      if (noteIdx == current->len) {
+      if (noteIdx >= current->len) {
         if (!Midi::loop()) {
           Midi::setSound(0);
           return;
