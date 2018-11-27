@@ -36,6 +36,9 @@ void Neopixel::setLight(uint8_t lightIdx) {
   }
 
   if (_currentIdx != lightIdx) {
+    dprint(F("Next light: "));
+    dprintln(lightIdx);
+
     _strip.clear();
     _strip.show();
 

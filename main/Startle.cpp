@@ -1,6 +1,4 @@
 #include "Startle.h"
-#include "Debug.h"
-//#include "Midi.h"
 
 constexpr uint8_t Startle::_localWeights[];
 

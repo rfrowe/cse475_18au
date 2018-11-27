@@ -1,4 +1,5 @@
 #include "Midi.h"
+#include "Debug.h"
 
 #include <Adafruit_GFX.h>
 
@@ -141,6 +142,11 @@ void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t dur
   _instrument = instrument;
 
   if (_current != SOUNDS[soundIdx]) {
+    dprint(F("Next sound: "));
+    dprint(soundIdx);
+    dprint(loop ? F(", looped") : F(""));
+    dprintln(retrograde ? F(", reversed") : F(""));
+
     if (_current != nullptr && noteFlag) {
       allNoteOff(0);
       noteFlag = false;
@@ -213,7 +219,6 @@ void TC5_Handler(void) {
   bool retrograde = Midi::retrograde();
 
   if (current != nullptr) {
-    Serial.print("Note idx: ");Serial.println(retrograde ? current->len - noteIdx - 1 : noteIdx);
     if (!gestFlag) {
       setVolume(0, current->volume);
       setBank(0, current->bank);

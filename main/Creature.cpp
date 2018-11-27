@@ -61,23 +61,23 @@ void Creature::loop() {
   if (dt > GLOBALS.CYCLE_TIME) {
     _updateDisplay();
 
-    // Uncomment to see all the current states & distances for creatures
+    // Some helpful printlns
     /*for (int i = 0; i < GLOBALS.NUM_CREATURES + 1; i++) {
-      Serial.print(_creatureStates[i]);
-      Serial.print("\t");
+      dprint(_creatureStates[i]);
+      dprint("\t");
     }
-    Serial.println();
+    dprintln();
 
     for (int i = 0; i < GLOBALS.NUM_CREATURES + 1; i++) {
-      Serial.print(_creatureDistances[i]);
-      Serial.print("\t");
+      dprint(_creatureDistances[i]);
+      dprint("\t");
     }
-    Serial.println();*/
+    dprintln();
 
     dprint("Threshold: ");
     dprint(_startleThreshold);
     dprint("/");
-    dprintln("255");
+    dprintln("255");*/
 
     if (_next != NULL) {
       // We have a predefined next state, transition immediately
@@ -102,11 +102,12 @@ void Creature::loop() {
   bool newPIR = digitalRead(PIR_PIN);
   if (newPIR && !_PIR) {
     // Rising edge trigger
+    dprintln(F("PIR triggered"));
     _state->PIR();
     _PIR = newPIR;
   } else if (!newPIR && _PIR) {
     // Falling edge
-    dprintln("PIR reset");
+    dprintln(F("PIR reset"));
     _PIR = newPIR;
   }
 }
@@ -227,9 +228,9 @@ bool Creature::_rxStart(uint8_t len, uint8_t* payload) {
   }
   uint8_t mode = payload[0];
 
-  Serial.print("Mode: ");Serial.println(mode);
+  Serial.print(F("Mode: "));Serial.println(mode);
   if (mode) {
-    Serial.print("Transitioning to _prev (");Serial.print(_prev->getName());Serial.print(") ");Serial.println((uint32_t)_prev, HEX);
+    Serial.print(F("Transitioning to _prev ("));Serial.print(_prev->getName());Serial.print(F(") "));Serial.println((uint32_t)_prev, HEX);
     _transition(_prev); // TODO: Fix
   } else {
     uint8_t nextStateID = payload[1];
@@ -392,12 +393,10 @@ void Creature::_transition(State* const state) {
     Serial.println(state->getId());
 
     _state = state;
-  
+
     if (state->getId() != WAIT && state->getId() != STARTLE) {
       updateThreshold();
     }
-    
-    
 
     if (_prev != nullptr && _prev != state) {
       // Delete the current _prev if it's not null, and it's not what we're currently transitioning to.
@@ -406,7 +405,7 @@ void Creature::_transition(State* const state) {
 
     _txSendState(old == nullptr ? 0 : old->getId(), state->getId());
     _prev = old;
-  } else if (state != old){
+  } else if (state != old) {
     // No need to transition, free this memory if it is not the same state.
     delete state;
   }
