@@ -9,10 +9,10 @@
 class Neopixel {
  public:
   /** List of all neopixel functions in this class. Each takes dt, the difference in time since the last call. */
-  static void rainbow(uint32_t dt);
+  static bool rainbow(uint32_t dt);
 
   /** Array of all light effects, in a fixed order, used to assign an index to each. Add your effects to this! */
-  static constexpr void (*LIGHTS[2])(uint32_t) = {nullptr, &rainbow};
+  static constexpr bool (*LIGHTS[2])(uint32_t) = {nullptr, &rainbow, &rainbow};
 
   /**
    * Use this to set the current light gesture.
