@@ -15,7 +15,7 @@
 #include <cmath>
 
 // TODO: put your kit number here
-#define KIT_NUM 0
+#define KIT_NUM 10
 
 #define VERSION "2.2"
 
@@ -27,7 +27,7 @@ inline float getBatteryVoltage() {
 
 Creature::Creature() {
   // Initialize _next to be the Wait state, so we will immediately transition into it on the first loop.
-  _next = getState(1);
+  _next = getState(0);
   _prev = _state = nullptr;
 
   if (KIT_NUM < 0) {

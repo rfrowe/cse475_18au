@@ -19,6 +19,7 @@
 #define VS1053_GM1_OCARINA 80
 #define VS1053_GM1_SLAP_BASS_1 36
 #define VS1053_GM1_CELLO 43
+#define VS1053_GM1_APPLAUSE 127
 
 #define MIDI_NOTE_ON  0x90
 #define MIDI_NOTE_OFF 0x80
@@ -55,12 +56,24 @@ class Midi {
   static Sound indigobu;
   static Sound mowa;
   static Sound wiwa;
+  static Sound thunder;
+  static Sound rain;
+  static Sound phoneRinger;
+  static Sound melodic;
+  static Sound wind;
+  static Sound musicBox;
+  static Sound harp;
+  static Sound seashore;
+  static Sound heavyRain;
+  static Sound phoneRinger2;
+  static Sound seashore2;
 
   /** Array of all sounds, in a fixed order, used to assign an index to each. Add your sounds to this! */
   static constexpr Sound *SOUNDS[] =
-      {nullptr, &Midi::scale, &Midi::bbwa, &Midi::bpwa, &Midi::brcr, &Midi::cardinal, &Midi::indigobu, &Midi::junco,
-       &Midi::mowa, &Midi::oriole, &Midi::osprey, &Midi::oven, &Midi::songspar, &Midi::towhee, &Midi::tuftedti,
-       &Midi::veery, &Midi::whthsprw, &Midi::wiwa};
+      {nullptr, &scale, &bbwa, &bpwa, &brcr, &cardinal, &indigobu, &junco, //7
+       &mowa, &oriole, &osprey, &oven, &songspar, &towhee, &tuftedti,//14
+       &veery, &whthsprw, &wiwa, &thunder, &rain, &phoneRinger, &melodic,//21
+       &wind, &musicBox, &harp, &seashore, &heavyRain, &phoneRinger2, &seashore2};
 
   /**
    * Use this to set the current sound gesture.

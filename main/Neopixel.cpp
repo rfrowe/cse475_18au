@@ -10,7 +10,7 @@ Adafruit_NeoPixel_ZeroDMA Neopixel::_strip = Adafruit_NeoPixel_ZeroDMA(NEOPIXEL_
 
 void Neopixel::setup() {
   _strip.begin();
-  _strip.setBrightness(5);
+  _strip.setBrightness(NEOPIXEL_BRIGHTNESS);
   _strip.show();
 }
 
@@ -52,19 +52,8 @@ uint8_t Neopixel::getLight() {
   return _currentIdx;
 }
 
-bool Neopixel::rainbow(uint32_t dt) {
-  static uint8_t offset = 0;
-  static uint32_t rainbowColors[NEOPIXEL_COUNT] = {16711680, 13578240, 10444800, 7311360, 4177920, 1044480, 56865, 44625,
-                                                   32385, 20145, 7905, 1179885, 4325565, 7471245, 10616925, 13762605};
-
-  if (dt > 50) {
-    for (uint8_t pix = 0; pix < NEOPIXEL_COUNT; pix++) {
-      _strip.setPixelColor((pix + offset) % NEOPIXEL_COUNT, rainbowColors[pix]);
-    }
-    _strip.show();
-    offset++;
-    return true;
+void Neopixel::_fill(uint32_t c, uint16_t first, uint16_t count) {
+  for (uint8_t pix = first; pix < first + count; pix++) {
+    _strip.setPixelColor(pix % NEOPIXEL_COUNT, c);
   }
-
-  return false;
 }
