@@ -38,8 +38,7 @@ bool tcIsSyncing();
 
 class Midi {
  public:
-  // More to come, add your sounds here!
-  static Sound scale;
+  // Birds
   static Sound bbwa;
   static Sound junco;
   static Sound cardinal;
@@ -56,24 +55,88 @@ class Midi {
   static Sound indigobu;
   static Sound mowa;
   static Sound wiwa;
+  static Sound birdChirp;
+  // Weather
   static Sound thunder;
   static Sound rain;
-  static Sound phoneRinger;
-  static Sound melodic;
+  static Sound heavyRain;
   static Sound wind;
+  static Sound seashore1;
+  static Sound seashore2;
+  static Sound seashore3;
+  //Music
+  static Sound melody1;
+  static Sound melody2;
+  static Sound melody3;
+  static Sound melody4;
+  static Sound melody5;
+  static Sound melody6;
   static Sound musicBox;
   static Sound harp;
-  static Sound seashore;
-  static Sound heavyRain;
-  static Sound phoneRinger2;
-  static Sound seashore2;
+  static Sound bells1;
+  static Sound bells2;
+  static Sound bells3;
+  static Sound bells4;
+  // Sounds
+  static Sound ringtone;
+  static Sound ticking;
+  static Sound phoneRinger;
+  static Sound scale;
+  // Insects
+  static Sound crickets;
+  static Sound insect;
 
   /** Array of all sounds, in a fixed order, used to assign an index to each. Add your sounds to this! */
   static constexpr Sound *SOUNDS[] =
-      {nullptr, &scale, &bbwa, &bpwa, &brcr, &cardinal, &indigobu, &junco, //7
-       &mowa, &oriole, &osprey, &oven, &songspar, &towhee, &tuftedti,//14
-       &veery, &whthsprw, &wiwa, &thunder, &rain, &phoneRinger, &melodic,//21
-       &wind, &musicBox, &harp, &seashore, &heavyRain, &phoneRinger2, &seashore2};
+      {nullptr,       // 00
+       // Birds
+       &bbwa,         // 01
+       &bpwa,         // 02
+       &brcr,         // 03
+       &cardinal,     // 04
+       &indigobu,     // 05
+       &junco,        // 06
+       &mowa,         // 07
+       &oriole,       // 08
+       &osprey,       // 09
+       &oven,         // 0A
+       &songspar,     // 0B
+       &towhee,       // 0C
+       &tuftedti,     // 0D
+       &veery,        // 0E
+       &whthsprw,     // 0F
+       &wiwa,         // 10
+       &birdChirp,    // 11
+       // Weather
+       &thunder,      // 12
+       &rain,         // 13
+       &heavyRain,    // 14
+       &wind,         // 15
+       &seashore1,    // 16
+       &seashore2,    // 17
+       &seashore3,    // 18
+       // Music
+       &melody1,      // 19
+       &melody2,      // 1A
+       &melody3,      // 1B
+       &melody4,      // 1C
+       &melody5,      // 1D
+       &melody6,      // 1E
+       &musicBox,     // 1F
+       &harp,         // 20
+       &bells1,       // 21
+       &bells2,       // 22
+       &bells3,       // 23
+       &bells4,       // 24
+       // Sounds
+       &ringtone,     // 25
+       &ticking,      // 26
+       &phoneRinger,  // 27
+       &scale,        // 28
+       // Insects
+       &crickets,     // 29
+       &insect,       // 2A
+     };
 
   /**
    * Use this to set the current sound gesture.

@@ -5,6 +5,19 @@ uint32_t rainbowColors[NEOPIXEL_COUNT] = {
   20145, 7905, 1179885, 4325565, 7471245, 10616925, 13762605
 };
 
+uint32_t Neopixel::wheel(uint8_t pos) {
+  pos = 255 - pos;
+  if (pos < 85) {
+    return _strip.Color(255 - pos * 3, 0, pos * 3);
+  }
+  if (pos < 170) {
+    pos -= 85;
+    return _strip.Color(0, pos * 3, 255 - pos * 3);
+  }
+  pos -= 170;
+  return _strip.Color(pos * 3, 255 - pos * 3, 0);
+}
+
 bool Neopixel::rainbow(uint32_t dt) {
   static uint8_t offset = 0;
 
@@ -13,12 +26,30 @@ bool Neopixel::rainbow(uint32_t dt) {
       _strip.setPixelColor((pix + offset) % NEOPIXEL_COUNT, rainbowColors[pix]);
     }
     _strip.show();
+
     offset++;
     return true;
   }
+
   return false;
 }
 
+bool Neopixel::smoothRainbow(uint32_t dt) {
+  static uint16_t offset = 0;
+
+  if (!dt || dt >= 25) {
+    for (uint8_t i = 0; i < NEOPIXEL_COUNT; i++) {
+      _strip.setPixelColor(i, wheel(((i * 256 / NEOPIXEL_COUNT) + offset) & 255));
+    }
+    _strip.show();
+    offset = (offset + 1) % 1024;
+    return true;
+  }
+
+  return false;
+}
+
+//
 bool Neopixel::bell(uint32_t dt) {
   static uint8_t offset = 0;
 
@@ -37,6 +68,7 @@ bool Neopixel::bell(uint32_t dt) {
   return false;
 }
 
+//
 bool Neopixel::strobe(uint32_t dt) {
   static uint8_t strobes_remaining = 0;
   static bool strobing = false;
@@ -60,6 +92,7 @@ bool Neopixel::strobe(uint32_t dt) {
   return false;
 }
 
+//
 bool Neopixel::melodic(uint32_t dt) {
   static bool on = false;
   static uint8_t offset = 0;
@@ -82,6 +115,7 @@ bool Neopixel::melodic(uint32_t dt) {
   return false;
 }
 
+//
 bool Neopixel::insects(uint32_t dt) {
   static bool fading = false;
   static bool in = false;
@@ -120,6 +154,7 @@ bool Neopixel::insects(uint32_t dt) {
   return false;
 }
 
+//
 bool Neopixel::wavez(uint32_t dt) {
   static bool fading = false;
   static bool in = false;
@@ -159,59 +194,55 @@ bool Neopixel::wavez(uint32_t dt) {
   return false;
 }
 
-
-bool Neopixel::lightning(uint32_t dt)
-{
-	if (dt >= 75) // Original Delay 500
-	{
-		uint8_t brightness = 255;
-		for (uint8_t i = 0; i < NEOPIXEL_COUNT; i++)
-		{
-			_strip.setPixelColor(i, brightness, brightness, brightness, brightness);
-		}
-		_strip.show();
-		delay(50);
-		brightness = 0;
-		for (uint8_t i = 0; i < NEOPIXEL_COUNT; i++)
-		{
-			_strip.setPixelColor(i, brightness, brightness, brightness, brightness);
-		}
-		_strip.show();
+//
+bool Neopixel::lightning(uint32_t dt) {
+    if (dt >= 75) // Original Delay 500
+    {
+        uint8_t brightness = 255;
+        for (uint8_t i = 0; i < NEOPIXEL_COUNT; i++)
+        {
+            _strip.setPixelColor(i, brightness, brightness, brightness, brightness);
+        }
+        _strip.show();
+        delay(50);
+        brightness = 0;
+        for (uint8_t i = 0; i < NEOPIXEL_COUNT; i++)
+        {
+            _strip.setPixelColor(i, brightness, brightness, brightness, brightness);
+        }
+        _strip.show();
     return true;
-	}
+    }
   return false;
 }
 
 // Custom Ambient 3
-bool Neopixel::rotating(uint32_t dt)
-{
-	static uint8_t loopCounter = 0;
-	if (dt >= 200) // Original Delay 200
-	{
-		for (uint8_t i = 0; i < NEOPIXEL_COUNT; i++)
-		{
-			uint8_t brightness = 0;
-			if ((i + loopCounter) % 4 == 0)
-			{
-				brightness = 255;
-			}
-			_strip.setPixelColor(i, brightness, brightness, brightness, brightness);
-		}
-		_strip.show();
+bool Neopixel::rotating(uint32_t dt) {
+    static uint8_t loopCounter = 0;
+    if (dt >= 200) // Original Delay 200
+    {
+        for (uint8_t i = 0; i < NEOPIXEL_COUNT; i++)
+        {
+            uint8_t brightness = 0;
+            if ((i + loopCounter) % 4 == 0)
+            {
+                brightness = 255;
+            }
+            _strip.setPixelColor(i, brightness, brightness, brightness, brightness);
+        }
+        _strip.show();
 
-		loopCounter++;
-		if (loopCounter == NEOPIXEL_COUNT)
-		{
-			loopCounter = 0;
-		}
+        loopCounter++;
+        if (loopCounter == NEOPIXEL_COUNT)
+        {
+            loopCounter = 0;
+        }
     return true;
-	}
+    }
   return false;
 }
 
-
-
-
+//
 bool Neopixel::wind(uint32_t dt) {
   static uint8_t offset = 0;
   static uint8_t rand_val = random(25, 200);
@@ -249,9 +280,8 @@ bool Neopixel::blinkDot(uint32_t dt) {
   return false;
 }
 
-
 // seashore lights
-bool Neopixel::breathCycle(uint32_t dt){
+bool Neopixel::breathCycle(uint32_t dt) {
   static uint8_t offset = 0;
   static boolean increasingFlag = true;
   if (dt >= 25) {
@@ -273,6 +303,7 @@ bool Neopixel::breathCycle(uint32_t dt){
   return false;
 }
 
+//
 bool Neopixel::twinkle_lights(uint32_t dt) {
   //Set brightness to 15?
   _strip.setBrightness(15);
@@ -295,6 +326,7 @@ bool Neopixel::twinkle_lights(uint32_t dt) {
   return false;
 }
 
+//
 bool Neopixel::lightning2(uint32_t dt) {
   _strip.setBrightness(15);
   Serial.println(dt);
@@ -320,6 +352,7 @@ bool Neopixel::lightning2(uint32_t dt) {
   return false;
 }
 
+//
 bool Neopixel::rotatingSlowly(uint32_t dt) {
   static uint8_t offset = 0;
 
@@ -334,7 +367,8 @@ bool Neopixel::rotatingSlowly(uint32_t dt) {
   return false;
 }
 
-bool Neopixel::quadRand(uint32_t dt){
+//
+bool Neopixel::quadRand(uint32_t dt) {
   uint16_t i;
   uint8_t R, G, B;
 
@@ -393,7 +427,8 @@ bool Neopixel::quadRand(uint32_t dt){
   return false;
 }
 
-bool Neopixel::fire(uint32_t dt){
+//
+bool Neopixel::fire(uint32_t dt) {
   uint16_t i;
   byte R, G;
 
@@ -417,7 +452,6 @@ bool Neopixel::fire(uint32_t dt){
   return false;
 }
 
-
 //requires the rain function to run
 byte rainDropState[16];
 byte rainShineState[16];
@@ -427,27 +461,27 @@ byte rainShineVolume[16];
 void Rain(byte* rds, byte* rss, byte* rdv, byte* rsv) {
   uint16_t i;
 
-  if(*rds == 0){
+  if(*rds == 0) {
     if(random(16) == 1){
       *rds = 1;
     }
   }
 
-  if(*rds == 1){
+  if (*rds == 1){
     i = random(120);
-    if((i + *rdv) >= 250){
+    if((i + *rdv) >= 250) {
       *rdv = 250;
       *rds = 2;
       *rss = 1;
-    }else{
+    } else {
       *rdv = *rdv + i;
     }
-  }else if(*rds == 2){
+  } else if(*rds == 2) {
     i = random(20);
-    if((*rdv - i) <= 0){
+    if ((*rdv - i) <= 0) {
       *rdv = 0;
       *rds = 0;
-    }else{
+    } else {
       *rdv = *rdv - i;
     }
 
@@ -471,6 +505,7 @@ void Rain(byte* rds, byte* rss, byte* rdv, byte* rsv) {
   }
 }
 
+//
 bool Neopixel::rainCycle(uint32_t dt) {
   uint16_t i;
 
@@ -525,32 +560,3 @@ bool Neopixel::bell2(uint32_t dt) {
 
   return false;
 }
-
-//
-// // Input a value 0 to 255 to get a color value.
-// // The colours are a transition r - g - b - back to r.
-// uint32_t Neopixel::Wheel(byte WheelPos) {
-//   WheelPos = 255 - WheelPos;
-//   if (WheelPos < 85) {
-//     return _strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-//   }
-//   if (WheelPos < 170) {
-//     WheelPos -= 85;
-//     return _strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-//   }
-//   WheelPos -= 170;
-//   return _strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-// }
-//
-// // Slightly different, this makes the rainbow equally distributed throughout
-// void Neopixel::rainbowCycle(uint32_t wait) {
-//   uint16_t i, j;
-//
-//   for (j = 0; j < 256 * 4; j++) { // n cycles of all colors on wheel
-//     for (i = 0; i < _strip.numPixels(); i++) {
-//       _strip.setPixelColor(i, Wheel(((i * 256 / _strip.numPixels()) + j) & 255));
-//     }
-//     _strip.show();
-//     delay(wait);
-//   }
-// }
