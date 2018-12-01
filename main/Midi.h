@@ -37,7 +37,7 @@ void tcReset();
 bool tcIsSyncing();
 
 class Midi {
- public:
+ private:
   // Birds
   static Sound bbwa;
   static Sound junco;
@@ -86,6 +86,7 @@ class Midi {
   static Sound crickets;
   static Sound insect;
 
+ public:
   /** Array of all sounds, in a fixed order, used to assign an index to each. Add your sounds to this! */
   static constexpr Sound *SOUNDS[] =
       {nullptr,       // 00

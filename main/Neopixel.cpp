@@ -40,6 +40,7 @@ void Neopixel::setLight(uint8_t lightIdx) {
     dprint(F("Next light: "));
     dprintln(lightIdx);
 
+    _strip.setBrightness(NEOPIXEL_BRIGHTNESS);
     _strip.clear();
     _strip.show();
 
