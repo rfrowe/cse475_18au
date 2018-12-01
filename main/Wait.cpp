@@ -9,8 +9,8 @@ uint8_t Wait::getNumRepeats() {
 }
 
 State* Wait::transition() {
-  Midi::setSound(Midi::getSound() ? 0 : 1);
-  Neopixel::setLight(Neopixel::getLight() ? 0 : 1);
+//  Midi::setSound(Midi::getSound() ? 0 : 1);
+// Neopixel::setLight(Neopixel::getLight() ? 0 : 1);
   return this;
 }
 

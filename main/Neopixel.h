@@ -5,14 +5,54 @@
 
 #define NEOPIXEL_PIN 19
 #define NEOPIXEL_COUNT 16
+#define NEOPIXEL_BRIGHTNESS 25
 
 class Neopixel {
+ private:
+   /** List of all neopixel functions in this class. Each takes dt, the difference in time since the last call. */
+   static bool rainbow(uint32_t dt);
+   static bool smoothRainbow(uint32_t dt);
+   static bool strobe(uint32_t dt);
+   static bool bell(uint32_t dt);
+   static bool melodic(uint32_t dt);
+   static bool insects(uint32_t dt);
+   static bool wavez(uint32_t dt);
+   static bool rotating(uint32_t dt);
+   static bool lightning(uint32_t dt);
+   static bool wind(uint32_t dt);
+   static bool blinkDot(uint32_t dt);
+   static bool twinkleLights(uint32_t dt);
+   static bool strobeRand(uint32_t dt);
+   static bool rotatingSlowly(uint32_t dt);
+   static bool rainCycle(uint32_t dt);
+   static bool quadRand(uint32_t dt);
+   static bool fire(uint32_t dt);
+   static bool flashing(uint32_t dt);
+   static bool bell2(uint32_t dt);
  public:
-  /** List of all neopixel functions in this class. Each takes dt, the difference in time since the last call. */
-  static void rainbow(uint32_t dt);
-
   /** Array of all light effects, in a fixed order, used to assign an index to each. Add your effects to this! */
-  static constexpr void (*LIGHTS[2])(uint32_t) = {nullptr, &rainbow};
+  static constexpr bool (*LIGHTS[])(uint32_t) = {
+    nullptr,            // 00
+    &rainbow,           // 01
+    &smoothRainbow,     // 02
+    &strobe,            // 03
+    &bell,              // 04
+    &melodic,           // 05
+    &insects,           // 06
+    &wavez,             // 07
+    &rotating,          // 08
+    &lightning,         // 09
+    &wind,              // 0A
+    &blinkDot,          // 0B
+    &twinkleLights,     // 0C
+    &strobeRand,        // 0D
+    &rotatingSlowly,    // 0E
+    &rainCycle,         // 0F
+    &quadRand,          // 10
+    &fire,              // 11
+    &flashing,          // 12
+    &bell2              // 13
+  };
 
   /**
    * Use this to set the current light gesture.
@@ -32,6 +72,23 @@ class Neopixel {
   /** Initialize Neopixel. */
   static void setup();
  private:
+  /**
+   * Adafruit_NeoPixel_ZeroDMA SUCKS and doesn't have the _fill method by default.
+   *
+   * @param c Color to fill with.
+   * @param first Index of LED to start filling with.
+   * @param count Number of LEDs to fill starting from first.
+   */
+  static void _fill(uint32_t c, uint16_t first=0, uint16_t count=NEOPIXEL_COUNT);
+
+  /**
+   * Wheel of colors transitioning from r, to g, to b, back to r.
+   *
+   * @param pos Position in color wheel.
+   * @return 32-bit color.
+   */
+  static uint32_t wheel(byte pos);
+
   /** Current light effect being played. Please do not change this value directly. Use Neopixel::setLight(uint8_t) */
   static uint8_t _currentIdx;
 
