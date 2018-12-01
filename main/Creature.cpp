@@ -415,35 +415,35 @@ void Creature::_transition(State* const state) {
 void Creature::_updateDisplay() {
   _battery = 0.95 * _battery + 0.05 * getBatteryVoltage();
 
-  oled.clearDisplay();
-  oled.setBattery(_battery);
-  oled.renderBattery();
+  _oled.clearDisplay();
+  _oled.setBattery(_battery);
+  _oled.renderBattery();
 
-  oled.setCursor(0, 0);
-  oled.print(_state ? _state->getName() : "None");
+  _oled.setCursor(0, 0);
+  _oled.print(_state ? _state->getName() : "None");
 
-  oled.setCursor(0, 11);
-  oled.print(F("TXRX:"));
-  oled.print(_txCount);
-  oled.print(F("/"));
-  oled.println(_rxCount);
+  _oled.setCursor(0, 11);
+  _oled.print(F("TXRX:"));
+  _oled.print(_txCount);
+  _oled.print(F("/"));
+  _oled.println(_rxCount);
 
-  oled.setCursor((OLED_WIDTH - 2 - (_addr > 9) - (_addr > 99) - sizeof(VERSION)) * 6, 11);
-  oled.print("#");
-  oled.print(_addr);
-  oled.print("v");
-  oled.print(VERSION);
+  _oled.setCursor((OLED_WIDTH - 2 - (_addr > 9) - (_addr > 99) - sizeof(VERSION)) * 6, 11);
+  _oled.print("#");
+  _oled.print(_addr);
+  _oled.print("v");
+  _oled.print(VERSION);
 
-  oled.setCursor(0, 22);
-  oled.print(F("Sound: "));
-  oled.print(Midi::getSoundIdx());
+  _oled.setCursor(0, 22);
+  _oled.print(F("Sound: "));
+  _oled.print(Midi::getSoundIdx());
 
   uint8_t lightIdx = Neopixel::getLight();
-  oled.setCursor((OLED_WIDTH - 8 - (lightIdx > 9) - (lightIdx > 99)) * 6, 22);
-  oled.print(F("Light: "));
-  oled.print(lightIdx);
+  _oled.setCursor((OLED_WIDTH - 8 - (lightIdx > 9) - (lightIdx > 99)) * 6, 22);
+  _oled.print(F("Light: "));
+  _oled.print(lightIdx);
 
-  oled.display();
+  _oled.display();
 }
 
 void Creature::setup() {
@@ -455,11 +455,11 @@ void Creature::setup() {
   delay(100);
   pinMode(LED_PIN, OUTPUT);
 
-  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
-  oled.display();
-  oled.clearDisplay();
-  oled.init();
-  oled.setBatteryVisible(true);
+  _oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
+  _oled.display();
+  _oled.clearDisplay();
+  _oled.init();
+  _oled.setBatteryVisible(true);
   _updateDisplay();
 
   Neopixel::setup();

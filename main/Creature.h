@@ -59,7 +59,6 @@ class Creature {
   Creature& operator=(Creature const&) = delete;
   ~Creature();
 
-  Adafruit_FeatherOLED oled = Adafruit_FeatherOLED();
   struct Globals GLOBALS = {
     /* TX_POWER */                  14,   // uint16_t
     /* STARTLE_RAND_MIN */          100,  // uint8_t
@@ -243,6 +242,8 @@ class Creature {
 
   /** Radio object for tx/rx */
   RH_RF69 _rf69 = RH_RF69(RFM69_CS, RFM69_INT);
+
+  Adafruit_FeatherOLED _oled = Adafruit_FeatherOLED();
 
   uint8_t _txCount, _rxCount;
 
