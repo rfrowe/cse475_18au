@@ -30,15 +30,12 @@ Creature::Creature() {
   _next = getState(0);
   _prev = _state = nullptr;
 
-  if (KIT_NUM < 0) {
-    Serial.print(F("Invalid kit number: "));
-    Serial.println();
-    while (1);
-  }
-
   pinMode(ID_PIN, INPUT_PULLUP);
   _kitNum = KIT_NUM;
   _addr = 2 * KIT_NUM  - digitalRead(ID_PIN);
+  if (_kitNum <= 0) {
+    _addr = BROADCAST_ADDR;
+  }
 
   // Parens zero initialize
   _creatureDistances = new int8_t[GLOBALS.NUM_CREATURES + 1]();
