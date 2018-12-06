@@ -81,7 +81,10 @@ void Creature::_processCommand() {
       if (Serial.available()) {
         uint8_t dst = (uint8_t) Serial.parseInt();
         if (dst > 0) {
-          bool res = tx(1, _addr, dst, 0, nullptr);
+          bool res = tx(PID_STOP, _addr, dst, 0, nullptr);
+          uint8_t nothing = 0;
+          res |= tx(PID_PLAY_EFFECT, _addr, dst, 1, &nothing);
+          res |= tx(PID_PLAY_SOUND, _addr, dst, 1, &nothing);
 
           if (!res) {
             Serial.print("ERROR ");
@@ -103,7 +106,7 @@ void Creature::_processCommand() {
           uint8_t pld[2];
           pld[0] = mode;
           pld[1] = state;
-          bool res = tx(2, _addr, dst, 2, pld);
+          bool res = tx(PID_START, _addr, dst, 2, pld);
 
           if (!res) {
             Serial.print("ERROR ");
@@ -125,7 +128,7 @@ void Creature::_processCommand() {
         if (dst > 0) {
           Serial.readStringUntil(' ');
           uint8_t sound = (uint8_t) _get_int();
-          bool res = tx(3, _addr, dst, 1, &sound);
+          bool res = tx(PID_PLAY_SOUND, _addr, dst, 1, &sound);
 
           if (!res) {
             Serial.print("ERROR ");
@@ -146,7 +149,7 @@ void Creature::_processCommand() {
           Serial.readStringUntil(' ');
           uint8_t effect = (uint8_t) _get_int();
 
-          bool res = tx(3, _addr, dst, 1, &effect);
+          bool res = tx(PID_PLAY_EFFECT, _addr, dst, 1, &effect);
 
           if (!res) {
             Serial.print("ERROR ");
