@@ -46,6 +46,7 @@ bool State::rxStartle(int8_t rssi, uint8_t len, uint8_t* payload) {
   strength = (uint8_t) round(decay * strength);
 
   startled(strength, id);
+  return true;
 }
 
 void State::txStartle(uint8_t strength, uint8_t id) {
