@@ -100,11 +100,13 @@ void Creature::loop() {
   if (newPIR && !_PIR) {
     // Rising edge trigger
     dprintln(F("PIR triggered"));
+    digitalWrite(LED_PIN, HIGH);
     _state->PIR();
     _PIR = newPIR;
   } else if (!newPIR && _PIR) {
     // Falling edge
     dprintln(F("PIR reset"));
+    digitalWrite(LED_PIN, LOW);
     _PIR = newPIR;
   }
 }
@@ -488,6 +490,7 @@ void Creature::setup() {
 
   pinMode(PIR_PIN, INPUT);
   _PIR = digitalRead(PIR_PIN);
+  digitalWrite(LED_PIN, _PIR);
 }
 
 Creature::~Creature() {
