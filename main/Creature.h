@@ -68,7 +68,7 @@ class Creature {
     /* STARTLE_DECAY */             30,   // uint8_t
     /* NUM_CREATURES */             35,   // uint8_t
     /* STARTLE_THRESHOLD_DECAY */   0.01,  // float32
-    /* CYCLE_TIME in ms */          1000,  // uint16_t
+    /* CYCLE_TIME in ms */          3000,  // uint16_t
   };
 
   /**
