@@ -54,9 +54,17 @@ void Creature::loop() {
 
   _pollRadio();
 
-  // Only trigger state loops and transitions every CYCLE_TIME ms
-  if (dt > GLOBALS.CYCLE_TIME) {
+  if (_next != NULL) {
+    // We have a predefined next state, transition immediately
+    _transition(_next);
+    _next = nullptr;
+
+    _state->loop(dt);
+
+    _lastLoop = thisLoop;
     _updateDisplay();
+  } else if (dt > GLOBALS.CYCLE_TIME) {
+    // Only trigger state loops and transitions every CYCLE_TIME ms
 
     // Some helpful printlns
     /*for (int i = 0; i < GLOBALS.NUM_CREATURES + 1; i++) {
@@ -76,11 +84,7 @@ void Creature::loop() {
     dprint("/");
     dprintln("255");*/
 
-    if (_next != NULL) {
-      // We have a predefined next state, transition immediately
-      _transition(_next);
-      _next = nullptr;
-    } else if (_remainingRepeats > 0) {
+    if (_remainingRepeats > 0) {
       // This state should be repeated more. Call loop and decrement
       _state->loop(dt);
       _remainingRepeats--;
@@ -91,6 +95,7 @@ void Creature::loop() {
     }
 
     _lastLoop = thisLoop;
+    _updateDisplay();
   }
 
   Neopixel::loop();
