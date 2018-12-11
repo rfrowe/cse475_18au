@@ -407,6 +407,9 @@ void Creature::_transition(State* const state) {
       delete _prev;
     }
 
+    Midi::setSound(0);
+    Neopixel::setLight(0);
+
     _txSendState(old == nullptr ? 0 : old->getId(), state->getId());
     _prev = old;
   } else if (state != old) {
