@@ -12,9 +12,16 @@ uint8_t Ambient2::getNumRepeats() {
 }
 
 void Ambient2::loop(uint32_t dt) {
+  static uint8_t reps = 0;
+
   // Sounds
   if (random(0, 10) <= 3) {
-    Midi::setSound(random(0, 3) == 0 ? 0x29 : 0x2B);
+    Midi::setSound(random(0, 3) == 0 ? 0x29 : 0x2B, true);
+    reps = random(3, 6);
+  } else if (reps > 0) {
+    reps--;
+  } else {
+    Midi::setSound(0);
   }
 
   // Effects
