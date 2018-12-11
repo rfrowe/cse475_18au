@@ -21,8 +21,6 @@ void Active2::loop(uint32_t dt) {
     uint16_t effectSize = 0x02; 
     Neopixel::setLight(effects[random(0x00, effectSize)]);
   }
-
-  
 }
 
 const uint8_t *Active2::getLocalWeights() {
