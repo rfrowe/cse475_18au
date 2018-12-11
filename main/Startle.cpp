@@ -17,8 +17,4 @@ float Startle::getStartleFactor() {
   return 9999999999;
 }
 
-bool Startle::rxStartle(uint8_t len, uint8_t* payload) {}
-
-void Startle::PIR() {}
-
-void Startle::startled() {}
+void Startle::startled(uint8_t strength, uint8_t id) {}
