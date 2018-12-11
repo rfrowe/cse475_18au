@@ -9,7 +9,7 @@ uint8_t Startle::getNumRepeats() {
 }
 
 void Startle::loop(uint32_t dt) {
-  Midi::setSound(0x27, true);
+  Midi::setSound(0x27, false);
   Neopixel::setLight(0x03);
 }
 
