@@ -364,7 +364,7 @@ bool Neopixel::quadRand(uint32_t dt) {
 bool Neopixel::fire(uint32_t dt) {
   uint8_t R, G;
 
-  if(dt >= 100){
+  if(dt >= 600){
     for(uint8_t i = 0; i < 16; i++){
       if(!random(4)){
         R = 255;
