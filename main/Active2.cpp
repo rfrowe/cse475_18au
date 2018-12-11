@@ -28,5 +28,5 @@ const uint8_t *Active2::getLocalWeights() {
 }
 
 float Active2::getStartleFactor() {
-	return 0.0015f;
+	return 0.0005f;
 }
