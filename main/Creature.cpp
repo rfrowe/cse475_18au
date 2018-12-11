@@ -81,12 +81,7 @@ void Creature::_processCommand() {
       if (Serial.available()) {
         uint8_t dst = (uint8_t) Serial.parseInt();
         if (dst > 0) {
-          bool res = tx(PID_STOP, _addr, dst, 0, nullptr);
-          uint8_t nothing = 0;
-          res |= tx(PID_PLAY_EFFECT, _addr, dst, 1, &nothing);
-          res |= tx(PID_PLAY_SOUND, _addr, dst, 1, &nothing);
-
-          if (!res) {
+          if (!tx(PID_STOP, _addr, dst, 0, nullptr)) {
             Serial.print("ERROR ");
           }
           Serial.print(dst == 255 ? "Stopping all creatures" : "Stopping creature #");
