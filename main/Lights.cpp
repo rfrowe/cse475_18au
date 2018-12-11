@@ -51,15 +51,18 @@ bool Neopixel::smoothRainbow(uint32_t dt) {
 }
 
 bool Neopixel::strobe(uint32_t dt) {
+  static uint8_t strobes_remaining;
   static bool on;
 
   if (!dt) {
+    strobes_remaining = 26;
     on = false;
   }
 
-  if (dt >= 75) {
+  if (strobes_remaining && dt >= 50) {
     if (on) {
       _strip.clear();
+      strobes_remaining--;
     } else {
       _fill(0xFFFFFFFF);
     }
@@ -67,6 +70,7 @@ bool Neopixel::strobe(uint32_t dt) {
     _strip.show();
     return true;
   }
+
   return false;
 }
 
@@ -270,7 +274,7 @@ bool Neopixel::wind(uint32_t dt) {
 
 bool Neopixel::blinkDot(uint32_t dt) {
   if (!dt) {
-    _strip.setBrightness(5);
+    _strip.setBrightness(15);
   }
 
   if (dt >= 100) {
