@@ -222,6 +222,8 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
 
 void Creature::_rxStop() {
   setNextState(getState(0));
+  Midi::setSound(0);
+  Neopixel::setLight(0);
 }
 
 bool Creature::_rxStart(uint8_t len, uint8_t* payload) {
