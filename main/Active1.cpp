@@ -1,15 +1,26 @@
 #include "Active1.h"
 #include "Debug.h"
 #include "Midi.h"
+#include "Neopixel.h"
+
+// Birds
 
 constexpr uint8_t Active1::_localWeights[];
 
 uint8_t Active1::getNumRepeats() {
- return rand() % 5 + 4; // 4 - 8 repeats
+ return random(10, 15);
 }
 
 void Active1::loop(uint32_t dt) {
-  Midi::setSound(15);
+  // Sounds
+  if (random(0, 10) <= 6) {
+    Midi::setSound(random(0x01,0x12));
+  } 
+
+  // Effects
+  uint16_t effects[] = {0x10, 0x11};
+  uint16_t effectSize = 0x02; 
+  Neopixel::setLight(effects[random(0x00, effectSize)]);
 }
 
 const uint8_t* Active1::getLocalWeights() {

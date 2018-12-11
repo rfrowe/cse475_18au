@@ -61,10 +61,10 @@ class Creature {
 
   struct Globals GLOBALS = {
     /* TX_POWER */                  14,   // uint16_t
-    /* STARTLE_RAND_MIN */          100,  // uint8_t
-    /* STARTLE_RAND_MAX */          200,  // uint8_t
+    /* STARTLE_RAND_MIN */          0,  // uint8_t
+    /* STARTLE_RAND_MAX */          0,  // uint8_t
     /* STARTLE_MAX */               255,  // uint8_t
-    /* STARTLE_THRESHOLD */         150,  // uint8_t
+    /* STARTLE_THRESHOLD */         255,  // uint8_t
     /* STARTLE_DECAY */             30,   // uint8_t
     /* NUM_CREATURES */             35,   // uint8_t
     /* STARTLE_THRESHOLD_DECAY */   0.01,  // float32
