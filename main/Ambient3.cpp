@@ -12,7 +12,7 @@ uint8_t Ambient3::getNumRepeats() {
 }
 
 void Ambient3::loop(uint32_t dt) {
-  Midi::setSound(0x15, true);
+  _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), 0x15, true));
   
   // Effects
   uint16_t effects[] = {0x01, 0x0A};

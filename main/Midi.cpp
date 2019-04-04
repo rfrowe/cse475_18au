@@ -127,8 +127,29 @@ void Midi::tcStartCounter() {
   while (tcIsSyncing()); //wait until snyc'd
 }
 
-void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t duration_offset, bool retrograde, int16_t instrument) {
+void VSLoadUserCode(void) {
+  int i = 0;
+
+  while (i<sizeof(sVS1053b_Realtime_MIDI_Plugin)/sizeof(sVS1053b_Realtime_MIDI_Plugin[0])) {
+    unsigned short addr, n, val;
+    addr = sVS1053b_Realtime_MIDI_Plugin[i++];
+    n = sVS1053b_Realtime_MIDI_Plugin[i++];
+    while (n--) {
+      val = sVS1053b_Realtime_MIDI_Plugin[i++];
+      musicPlayer.sciWrite(addr, val);
+    }
+  }
+}
+
+bool Midi::setSound(bool mode, uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t duration_offset, bool retrograde, int16_t instrument) {
   noInterrupts();
+
+  // Switch the mode to midi if it needs to be changed
+  if (!mode) {
+    VSLoadUserCode();
+    mode = !mode;
+  }
+  
 
   // Constrain soundIdx. Anything outside of the bounds of the array is 0.
   if (soundIdx >= sizeof(SOUNDS) / sizeof(void*)) {
@@ -163,6 +184,7 @@ void Midi::setSound(uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t dur
   }
 
   interrupts();
+  return mode;
 }
 
 uint8_t Midi::getSoundIdx() {
@@ -229,7 +251,7 @@ void TC5_Handler(void) {
     if (!noteFlag) {
       if (noteIdx >= current->len) {
         if (!Midi::loop()) {
-          Midi::setSound(0);
+          Midi::setSound(false, 0);
           return;
         }
 

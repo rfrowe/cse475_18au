@@ -99,21 +99,6 @@ void Creature::loop() {
   }
 
   Neopixel::loop();
-
-  // Poll PIR
-  bool newPIR = digitalRead(PIR_PIN);
-  if (newPIR && !_PIR) {
-    // Rising edge trigger
-    dprintln(F("PIR triggered"));
-    digitalWrite(LED_PIN, HIGH);
-    _state->PIR();
-    _PIR = newPIR;
-  } else if (!newPIR && _PIR) {
-    // Falling edge
-    dprintln(F("PIR reset"));
-    digitalWrite(LED_PIN, LOW);
-    _PIR = newPIR;
-  }
 }
 
 bool Creature::_rx(uint8_t pid, uint8_t srcAddr, uint8_t len, uint8_t* payload, int8_t rssi) {
@@ -222,7 +207,7 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
 
 void Creature::_rxStop() {
   setNextState(getState(0));
-  Midi::setSound(0);
+  setMidiMode(Midi::setSound(getMidiMode(), 0));
   Neopixel::setLight(0);
 }
 
@@ -409,7 +394,7 @@ void Creature::_transition(State* const state) {
       delete _prev;
     }
 
-    Midi::setSound(0);
+    setMidiMode(Midi::setSound(getMidiMode(), 0));
     Neopixel::setLight(0);
 
     _txSendState(old == nullptr ? 0 : old->getId(), state->getId());
@@ -456,6 +441,7 @@ void Creature::_updateDisplay() {
 }
 
 void Creature::setup() {
+  
   Serial.print(F("Booting kit: "));
   Serial.println(KIT_NUM);
   Serial.print(F("Address: "));
@@ -470,6 +456,9 @@ void Creature::setup() {
   _oled.init();
   _oled.setBatteryVisible(true);
   _updateDisplay();
+
+  // Set midi mode to be disabled by default
+  _midi = false;
 
   Neopixel::setup();
 
@@ -497,10 +486,6 @@ void Creature::setup() {
   Serial.println(F("MHz"));
 
   Midi::setup();
-
-  pinMode(PIR_PIN, INPUT);
-  _PIR = digitalRead(PIR_PIN);
-  digitalWrite(LED_PIN, _PIR);
 }
 
 Creature::~Creature() {

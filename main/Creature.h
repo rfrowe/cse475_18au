@@ -14,7 +14,6 @@ class State;
 #define VREF 3.3
 
 #define ID_PIN A0
-#define PIR_PIN A1
 #define VBAT_PIN A7
 #define LED_PIN 13
 
@@ -130,6 +129,14 @@ class Creature {
 
   int8_t* getCreatureDistances() {
     return _creatureDistances;
+  }
+
+  bool getMidiMode() {
+    return _midi;
+  }
+
+  void setMidiMode(bool mode) {
+    _midi = mode;
   }
 
   uint8_t updateThreshold();
@@ -250,8 +257,8 @@ class Creature {
   /** Current battery voltage. */
   float _battery;
 
-  /** Last known state of the PIR sensor. Used for duplicate detection. */
-  bool _PIR;
+  bool _midi;
+
 };
 
 #endif  // _CREATURE_H_

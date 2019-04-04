@@ -22,7 +22,7 @@ bool State::rxPlaySound(uint8_t len, uint8_t* payload) {
   if (len < 1) {
     return false;
   }
-  Midi::setSound(payload[0]);
+  _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), payload[0]));
   return true;
 }
 
@@ -54,13 +54,6 @@ void State::txStartle(uint8_t strength, uint8_t id) {
   pld[0] = strength;
   pld[1] = id;
   _creature.tx(6, 255, 2, pld);
-}
-
-void State::PIR() {
-  uint8_t id = rand() % 256;
-  uint8_t strength = min(255, (rand() % (_creature.GLOBALS.STARTLE_RAND_MAX - _creature.GLOBALS.STARTLE_RAND_MIN + 1) + _creature.GLOBALS.STARTLE_RAND_MIN) * (1.f - (255.f / _creature.GLOBALS.STARTLE_THRESHOLD) * 0.5 + 1.f));
-
-  startled(strength, id);
 }
 
 void State::startled(uint8_t strength, uint8_t id) {

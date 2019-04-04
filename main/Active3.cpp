@@ -14,7 +14,7 @@ uint8_t Active3::getNumRepeats() {
 void Active3::loop(uint32_t dt) {
   // Sounds
   if (random(0, 10) <= 6) {
-    Midi::setSound(random(0x19, 0x1F));
+    _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), random(0x19, 0x1F)));
   }
 
   // Effects

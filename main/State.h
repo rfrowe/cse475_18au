@@ -71,11 +71,6 @@ class State {
    */
   virtual float getStartleFactor() = 0;
 
-  /**
-   * Called when PIR pin goes from LOW to HIGH.
-   */
-  virtual void PIR();
-
   // Packet transmitters
   /**
    * Transmit a startle packet.

@@ -14,7 +14,7 @@ uint8_t Ambient1::getNumRepeats() {
 void Ambient1::loop(uint32_t dt) {
   // Sounds
   if (random(0, 10) <= 3) {
-    Midi::setSound(random(0x13, 0x18), true);
+    _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), random(0x13, 0x18), true));
   }
 
   // Effects

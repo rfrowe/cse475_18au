@@ -15,7 +15,7 @@ void Active2::loop(uint32_t dt) {
   if (random(0, 10) > 6) {
     Neopixel::setLight(0x00);
   } else {
-    Midi::setSound(random(0x21, 0x25));
+    _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), random(0x21, 0x25)));
     // Effects
     uint16_t effects[] = {0x04, 0x13};
     uint16_t effectSize = 0x02; 

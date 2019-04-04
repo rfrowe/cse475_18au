@@ -16,12 +16,12 @@ void Ambient2::loop(uint32_t dt) {
 
   // Sounds
   if (random(0, 10) <= 3) {
-    Midi::setSound(random(0, 3) == 0 ? 0x29 : 0x2B, true);
+    _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), random(0, 3) == 0 ? 0x29 : 0x2B, true));
     reps = random(3, 6);
   } else if (reps > 0) {
     reps--;
   } else {
-    Midi::setSound(0);
+    _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), 0));
   }
 
   // Effects
