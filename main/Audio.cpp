@@ -2,6 +2,8 @@
 #include "Creature.h"
 
 void Audio::MidiMode(void) {
+  Serial.println("To MIDI Mode");
+  musicPlayer.begin();
   int i = 0;
 
   while (i<sizeof(sVS1053b_Realtime_MIDI_Plugin)/sizeof(sVS1053b_Realtime_MIDI_Plugin[0])) {
@@ -16,9 +18,9 @@ void Audio::MidiMode(void) {
 }
 
 void Audio::MP3Mode(void) {
+  Serial.println("To MP3 Mode");
   musicPlayer.softReset();
   musicPlayer.begin();
-  musicPlayer.setVolume(MP3_VOLUME, MP3_VOLUME);
 }
 
 void Audio::setMidi(Creature& creature, uint8_t soundIdx, bool loop, uint8_t transpose, uint16_t duration_offset, bool retrograde, int16_t instrument) {
@@ -26,7 +28,7 @@ void Audio::setMidi(Creature& creature, uint8_t soundIdx, bool loop, uint8_t tra
     creature.setMidiMode(true);
     MidiMode();
   }
-  musicPlayer.sineTest(0x44, 500);
+
   Midi::setSound(soundIdx, loop, transpose, duration_offset, retrograde, instrument);
 }
 
@@ -35,21 +37,23 @@ void Audio::setMP3(Creature& creature, uint8_t soundIdx, bool loop, uint8_t volu
     creature.setMidiMode(false);
     MP3Mode();
   }
-  MP3Mode();
-  //musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
-  musicPlayer.begin();
   musicPlayer.setVolume(MP3_VOLUME, MP3_VOLUME);
   musicPlayer.playFullFile("track001.mp3");
-  while (!musicPlayer.stopped());
+  //while (!musicPlayer.stopped());
 }
 
 void Audio::init() {
+  
   pinMode(8, INPUT_PULLUP);
   if (!SD.begin(CARDCS)) {
     Serial.println(F("SD failed, or not present"));
   }
 
-  if (! musicPlayer.begin()) { // initialise the music player
+  if (!musicPlayer.begin()) { // initialise the music player
      Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
   }
+  VS1053_MIDI.begin(31250); // MIDI uses a 'strange baud rate'
+  musicPlayer.setVolume(MP3_VOLUME, MP3_VOLUME);
+  musicPlayer.useInterrupt(TC5_IRQn);  // DREQ int
 }
+

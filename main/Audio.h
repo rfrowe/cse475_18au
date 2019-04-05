@@ -7,7 +7,7 @@
 
 class Creature;
 
-#define MP3_VOLUME 1
+#define MP3_VOLUME 20
 
 #define VS1053_RESET   -1     // VS1053 reset pin (not used!)
 #define VS1053_CS       6     // VS1053 chip select pin (output)
@@ -45,9 +45,9 @@ class Audio {
    static void setMP3(Creature& creature, uint8_t soundIdx, bool loop=false, uint8_t volume=1);
 
    static void init();
-
- private:
    static void MidiMode(void);
+ private:
+   
    static void MP3Mode(void);
 };
 #endif  // _AUDIO_H_

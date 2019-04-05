@@ -23,8 +23,11 @@ bool State::rxPlaySound(uint8_t len, uint8_t* payload) {
   if (len < 1) {
     return false;
   }
-  Audio::setMidi(_creature, payload[0]);
-  //Audio::setMP3(_creature, 0, false, 1);
+  if (payload[0] == 0) {
+    Audio::setMP3(_creature, 0, false, 1);
+  } else {
+    Audio::setMidi(_creature, payload[0]);
+  }
   return true;
 }
 
