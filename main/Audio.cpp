@@ -26,7 +26,7 @@ void Audio::setMidi(Creature& creature, uint8_t soundIdx, bool loop, uint8_t tra
     creature.setMidiMode(true);
     MidiMode();
   }
-  MidiMode();
+  musicPlayer.sineTest(0x44, 500);
   Midi::setSound(soundIdx, loop, transpose, duration_offset, retrograde, instrument);
 }
 
@@ -36,6 +36,7 @@ void Audio::setMP3(Creature& creature, uint8_t soundIdx, bool loop, uint8_t volu
     MP3Mode();
   }
   MP3Mode();
+  //musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
   musicPlayer.begin();
   musicPlayer.setVolume(MP3_VOLUME, MP3_VOLUME);
   musicPlayer.playFullFile("track001.mp3");
@@ -47,7 +48,7 @@ void Audio::init() {
   if (!SD.begin(CARDCS)) {
     Serial.println(F("SD failed, or not present"));
   }
-  
+
   if (! musicPlayer.begin()) { // initialise the music player
      Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
   }
