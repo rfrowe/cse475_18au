@@ -2,6 +2,7 @@
 #include "Debug.h"
 #include "Midi.h"
 #include "Neopixel.h"
+#include "Audio.h"
 
 // Weather
 
@@ -14,7 +15,7 @@ uint8_t Ambient1::getNumRepeats() {
 void Ambient1::loop(uint32_t dt) {
   // Sounds
   if (random(0, 10) <= 3) {
-    _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), random(0x13, 0x18), true));
+    Audio::setMidi(_creature, random(0x13, 0x18), true);
   }
 
   // Effects

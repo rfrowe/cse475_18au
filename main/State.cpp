@@ -4,6 +4,7 @@
 #include "Midi.h"
 #include "Neopixel.h"
 #include "Debug.h"
+#include "Audio.h"
 
 State::State(Creature& creature, char* const name, const uint8_t id) : _creature(creature), _id(id) {
   strncpy(_name, name, MAX_NAME_LEN);
@@ -22,7 +23,8 @@ bool State::rxPlaySound(uint8_t len, uint8_t* payload) {
   if (len < 1) {
     return false;
   }
-  _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), payload[0]));
+  Audio::setMidi(_creature, payload[0]);
+  //Audio::setMP3(_creature, 0, false, 1);
   return true;
 }
 

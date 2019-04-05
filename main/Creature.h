@@ -9,6 +9,7 @@
 
 #include "Midi.h"
 
+class Audio;
 class State;
 
 #define VREF 3.3

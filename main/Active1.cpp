@@ -2,6 +2,7 @@
 #include "Debug.h"
 #include "Midi.h"
 #include "Neopixel.h"
+#include "Audio.h"
 
 // Birds
 
@@ -14,7 +15,7 @@ uint8_t Active1::getNumRepeats() {
 void Active1::loop(uint32_t dt) {
   // Sounds
   if (random(0, 10) <= 6) {
-    _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), random(0x01,0x12)));
+    Audio::setMidi(_creature, random(0x01,0x12));
   } 
 
   // Effects

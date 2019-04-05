@@ -1,6 +1,7 @@
 #include "Creature.h"
 #include "Debug.h"
 #include "State.h"
+#include "Audio.h"
 #include "Wait.h"
 #include "Active1.h"
 #include "Active2.h"
@@ -207,7 +208,7 @@ bool Creature::_rxSetGlobals(uint8_t len, uint8_t* payload) {
 
 void Creature::_rxStop() {
   setNextState(getState(0));
-  setMidiMode(Midi::setSound(getMidiMode(), 0));
+  Audio::setMidi(*this, 0);
   Neopixel::setLight(0);
 }
 
@@ -394,7 +395,7 @@ void Creature::_transition(State* const state) {
       delete _prev;
     }
 
-    setMidiMode(Midi::setSound(getMidiMode(), 0));
+    Audio::setMidi(*this, 0);
     Neopixel::setLight(0);
 
     _txSendState(old == nullptr ? 0 : old->getId(), state->getId());

@@ -2,6 +2,7 @@
 #include "Debug.h"
 #include "Midi.h"
 #include "Neopixel.h"
+#include "Audio.h"
 
 // Melody
 
@@ -14,7 +15,7 @@ uint8_t Active3::getNumRepeats() {
 void Active3::loop(uint32_t dt) {
   // Sounds
   if (random(0, 10) <= 6) {
-    _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), random(0x19, 0x1F)));
+    Audio::setMidi(_creature, random(0x19, 0x1F));
   }
 
   // Effects

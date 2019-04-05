@@ -1,6 +1,7 @@
 #include "Active2.h"
 #include "Midi.h"
 #include "Neopixel.h"
+#include "Audio.h"
 
 // Bells
 
@@ -15,7 +16,7 @@ void Active2::loop(uint32_t dt) {
   if (random(0, 10) > 6) {
     Neopixel::setLight(0x00);
   } else {
-    _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), random(0x21, 0x25)));
+    Audio::setMidi(_creature, random(0x21, 0x25));
     // Effects
     uint16_t effects[] = {0x04, 0x13};
     uint16_t effectSize = 0x02; 

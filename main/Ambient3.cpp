@@ -2,6 +2,7 @@
 #include "Debug.h"
 #include "Midi.h"
 #include "Neopixel.h"
+#include "Audio.h"
 
 // Wind
 
@@ -12,7 +13,7 @@ uint8_t Ambient3::getNumRepeats() {
 }
 
 void Ambient3::loop(uint32_t dt) {
-  _creature.setMidiMode(Midi::setSound(_creature.getMidiMode(), 0x15, true));
+  Audio::setMidi(_creature, 0x15, true);
   
   // Effects
   uint16_t effects[] = {0x01, 0x0A};
